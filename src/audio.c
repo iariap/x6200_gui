@@ -78,6 +78,7 @@ static atomic_int           qa_echo_single_phase;
 static atomic_int           qa_echo_preset_off;
 static atomic_bool          qa_hw_running;
 static atomic_bool          qa_hw_abort;
+static atomic_int           qa_hw_only_phase;
 #endif
 
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
@@ -1499,16 +1500,19 @@ static void *qa_hw_route_thread(void *arg) {
         usleep(10000);
     }
 
-    /* A: BASE + ZERO */
-    for (int phase = 0; phase < 5 && !atomic_load(&qa_hw_abort); phase++) {
+    int only = atomic_load(&qa_hw_only_phase);
+    int first = (only >= 1 && only <= 5) ? only - 1 : 0;
+    int last = (only >= 1 && only <= 5) ? only : 5;
+
+    for (int phase = first; phase < last && !atomic_load(&qa_hw_abort); phase++) {
         static const char *names[] = { "A_BASE_ZERO", "B_DAC_ZERO", "C_DAC_TONE",
                                        "D_BASE_TONE", "E_BASE_ZERO" };
         bool tone = (phase == 2 || phase == 3);
         const char *name = names[phase];
 
-        if (phase == 1) {
+        if (phase == 1 || (only == 3 && phase == 2)) {
             if (!radio_audio_route_set(true)) {
-                rx_qa_log("HW_ROUTE FAIL DAC at B");
+                rx_qa_log("HW_ROUTE FAIL DAC");
                 goto cleanup;
             }
             mux_dac = true;
@@ -1552,6 +1556,7 @@ cleanup:
               x6200_control_get(x6200_sple_atue_trx), (int) radio_get_state());
     atomic_store(&qa_hw_running, false);
     atomic_store(&qa_hw_abort, false);
+    atomic_store(&qa_hw_only_phase, 0);
     return NULL;
 }
 
@@ -1563,9 +1568,32 @@ bool audio_qa_speaker_hw_route_start(void) {
         rx_qa_log("HW_ROUTE REFUSE reentry");
         return false;
     }
+    atomic_store(&qa_hw_only_phase, 0);
     atomic_store(&qa_hw_abort, false);
     if (pthread_create(&th, NULL, qa_hw_route_thread, NULL) != 0) {
         atomic_store(&qa_hw_running, false);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+bool audio_qa_speaker_hw_phase_start(int phase) {
+    bool expected = false;
+    pthread_t th;
+
+    if (phase < 1 || phase > 5) {
+        return false;
+    }
+    if (!atomic_compare_exchange_strong(&qa_hw_running, &expected, true)) {
+        rx_qa_log("HW_ROUTE REFUSE reentry phase");
+        return false;
+    }
+    atomic_store(&qa_hw_only_phase, phase);
+    atomic_store(&qa_hw_abort, false);
+    if (pthread_create(&th, NULL, qa_hw_route_thread, NULL) != 0) {
+        atomic_store(&qa_hw_running, false);
+        atomic_store(&qa_hw_only_phase, 0);
         return false;
     }
     pthread_detach(th);

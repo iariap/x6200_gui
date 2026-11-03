@@ -47,6 +47,7 @@ extern "C" {
     bool audio_qa_speaker_echo_phase_start(int phase);
     bool audio_qa_speaker_echo_processed_off_start(void);
     bool audio_qa_speaker_hw_route_start(void);
+    bool audio_qa_speaker_hw_phase_start(int phase);
     void audio_qa_speaker_hw_route_abort(void);
 #endif
     #include "cJSON.h"
@@ -138,6 +139,7 @@ typedef enum {
     CMD_RX_QA_ECHO_ZERO, CMD_RX_QA_ECHO_RAW, CMD_RX_QA_ECHO_PROCESSED,
     CMD_RX_QA_ECHO_PROCESSED_OFF,
     CMD_RX_QA_HW_ROUTE, CMD_RX_QA_HW_ABORT,
+    CMD_RX_QA_HW_A, CMD_RX_QA_HW_B, CMD_RX_QA_HW_C, CMD_RX_QA_HW_D, CMD_RX_QA_HW_E,
 #endif
 } cmd_id_t;
 
@@ -459,6 +461,21 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_HW_ABORT:
             audio_qa_speaker_hw_route_abort();
+            break;
+        case CMD_RX_QA_HW_A:
+            (void) audio_qa_speaker_hw_phase_start(1);
+            break;
+        case CMD_RX_QA_HW_B:
+            (void) audio_qa_speaker_hw_phase_start(2);
+            break;
+        case CMD_RX_QA_HW_C:
+            (void) audio_qa_speaker_hw_phase_start(3);
+            break;
+        case CMD_RX_QA_HW_D:
+            (void) audio_qa_speaker_hw_phase_start(4);
+            break;
+        case CMD_RX_QA_HW_E:
+            (void) audio_qa_speaker_hw_phase_start(5);
             break;
 #endif
         case CMD_VOL:
@@ -866,6 +883,11 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
         cmd->id = CMD_RX_QA_HW_ABORT;
         return NULL;
     }
+    if (!strcmp(name, "rx_speaker_hw_a")) { cmd->id = CMD_RX_QA_HW_A; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_b")) { cmd->id = CMD_RX_QA_HW_B; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_c")) { cmd->id = CMD_RX_QA_HW_C; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_d")) { cmd->id = CMD_RX_QA_HW_D; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_e")) { cmd->id = CMD_RX_QA_HW_E; return NULL; }
 #endif
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||
