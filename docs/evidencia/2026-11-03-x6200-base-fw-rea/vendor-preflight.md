@@ -142,3 +142,20 @@ montajes.
 `FLASH_PREFLIGHT=FAIL` por imposibilidad de control gráfico autónomo.
 Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000;
 `freq_bg=7143000`/estado de UI; sin montajes.
+
+## Control evdev + LinuxFB: captura e inyección funcionan, navegación al updater incompleta
+
+- `/dev/input/event0` acepta `write()` con `struct input_event`: se inyectaron teclas de la matriz
+  (HAPPY1/13/14/15/19/20/27/29/30) y la UI cambió; no hubo TX/PTT/ATU.
+- Captura de `/dev/fb0` corregida: 480×800, 32 bpp, stride1920, formato RGBA/BGRA; imagen rotada
+  90° se rota para análisis.
+- **Etiquetas ausentes** en la UI vendor: se corrigieron con
+  `QT_QPA_FONTDIR=/usr/share/fonts`, `FONTCONFIG_PATH=/etc/fonts`,
+  `FONTCONFIG_FILE=/etc/fonts/fonts.conf`; las capturas muestran labels (VOL, SPLIT, A/B,
+  SETTING1(1/2) GEN, AUDIO EQ, NEXT/PREV).
+- Se abrió el menú **SETTING** con F1/HAPPY13; F2/HAPPY14 mostró **AUDIO EQ**; F3/F4/F5 no
+  llevaron a **Firmware Upgrade**. No se pudo identificar/activar la transición **NEXT** al panel
+  del updater sin pulsar a ciegas.
+- **No se seleccionó firmware; no se pulsó UPGRADE; no se envió IAP/erase/XMODEM.**
+- Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000;
+  sin montajes.

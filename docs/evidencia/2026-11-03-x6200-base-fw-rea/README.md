@@ -184,3 +184,11 @@ abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL`.
 VNC software no entrega framebuffer y termina; Xvfb no está en host y vendor no tiene `libqxcb.so`;
 LinuxFB no tiene `/dev/uinput` para input. No se envió IAP/erase/XMODEM. Flash abortado; radio
 restaurada. `FLASH_PREFLIGHT=FAIL`.
+
+
+## 15. evdev + LinuxFB: captura/injecção OK, labels corregidos, updater no alcanzado
+
+`evdev_write` funciona sobre `/dev/input/event0`; framebuffer capturado/rotado; labels corregidos con
+`QT_QPA_FONTDIR`. Se alcanzó el menú SETTING (GEN/AUDIO), pero no se localizó/activó NEXT hacia
+Firmware Upgrade. No se seleccionó firmware ni se pulsó UPGRADE; sin IAP/erase/XMODEM. Radio
+restaurada. `FLASH_PREFLIGHT=FAIL_UI_NAVIGATION`.
