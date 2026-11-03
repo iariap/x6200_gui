@@ -1,0 +1,16 @@
+{"t":"ok"}
+-rw-------    1 root     root       2101768 Nov  3 04:54 /tmp/qa12-monitor.raw
+===LOG===
+QA12 START vol=10 preset=OFF reg12_shadow=0x00001000
+QA12 PHASE ZERO START t_ms=218 reg12_shadow=0x00001008
+QA12 PHASE ZERO END reg12_shadow=0x00001008
+QA12 PHASE TONE START t_ms=5243 reg12_shadow=0x00001008
+QA12 PHASE TONE END reg12_shadow=0x00001008
+QA12 PHASE ZERO START t_ms=10264 reg12_shadow=0x00001008
+QA12 PHASE ZERO END reg12_shadow=0x00001008
+QA12 PHASE RAW START t_ms=15288 reg12_shadow=0x00001008
+QA12 PHASE RAW END reg12_shadow=0x00001008
+QA12 DONE vol=10 reg12_shadow=0x00001000 state=0
+===STATE===
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7355000,"mode":"LSB","band":"","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":10,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":45,"nr_level":0,"pwr":50,"db":-97,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+Tue Nov  3 04:54:56 UTC 2026

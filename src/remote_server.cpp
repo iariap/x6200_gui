@@ -48,6 +48,7 @@ extern "C" {
     bool audio_qa_speaker_echo_processed_off_start(void);
     bool audio_qa_speaker_hw_route_start(void);
     bool audio_qa_speaker_hw_phase_start(int phase);
+    bool audio_qa_speaker_qa12_start(void);
     void audio_qa_speaker_hw_route_abort(void);
 #endif
     #include "cJSON.h"
@@ -140,6 +141,7 @@ typedef enum {
     CMD_RX_QA_ECHO_PROCESSED_OFF,
     CMD_RX_QA_HW_ROUTE, CMD_RX_QA_HW_ABORT,
     CMD_RX_QA_HW_A, CMD_RX_QA_HW_B, CMD_RX_QA_HW_C, CMD_RX_QA_HW_D, CMD_RX_QA_HW_E,
+    CMD_RX_QA_QA12,
 #endif
 } cmd_id_t;
 
@@ -476,6 +478,9 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_HW_E:
             (void) audio_qa_speaker_hw_phase_start(5);
+            break;
+        case CMD_RX_QA_QA12:
+            (void) audio_qa_speaker_qa12_start();
             break;
 #endif
         case CMD_VOL:
@@ -888,6 +893,7 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     if (!strcmp(name, "rx_speaker_hw_c")) { cmd->id = CMD_RX_QA_HW_C; return NULL; }
     if (!strcmp(name, "rx_speaker_hw_d")) { cmd->id = CMD_RX_QA_HW_D; return NULL; }
     if (!strcmp(name, "rx_speaker_hw_e")) { cmd->id = CMD_RX_QA_HW_E; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12")) { cmd->id = CMD_RX_QA_QA12; return NULL; }
 #endif
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||

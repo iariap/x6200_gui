@@ -79,6 +79,10 @@ static atomic_int           qa_echo_preset_off;
 static atomic_bool          qa_hw_running;
 static atomic_bool          qa_hw_abort;
 static atomic_int           qa_hw_only_phase;
+/* QA12: fases por el router real. 0=off, 1=ZERO, 2=TONE, 3=ZERO, 4=RAW. */
+static atomic_int           qa12_phase;
+static atomic_int           qa12_tone_idx;
+static int16_t              qa12_tone[10][RX_AUDIO_LIVE_BLOCK_SAMPLES];
 #endif
 
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
@@ -303,6 +307,7 @@ static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
 #ifdef X6200_RX_SPEAKER_QA
     rx_qa_capture_observe(samples, process);
     int phase = atomic_load(&qa_echo_phase);
+    int qa12 = atomic_load(&qa12_phase);
     int16_t raw[CAPTURE_SCRATCH_SAMPLES];
 
     if (samples > CAPTURE_SCRATCH_SAMPLES) {
@@ -311,12 +316,28 @@ static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
     if (process) {
         memcpy(raw, scratch, samples * sizeof(int16_t));
         audio_enh_process(scratch, samples);
-        if (phase == 1) {
+        if (qa12 != 0) {
+            if (qa12 == 1 || qa12 == 3) {
+                rx_audio_live_submit(qa_zero_block, samples);
+            } else if (qa12 == 2) {
+                int idx = atomic_fetch_add(&qa12_tone_idx, 1);
+                rx_audio_live_submit(qa12_tone[idx % 10], samples);
+            } else {
+                rx_audio_live_submit(raw, samples);
+            }
+        } else if (phase == 1) {
             rx_audio_live_submit(qa_zero_block, samples);
         } else if (phase == 2) {
             rx_audio_live_submit(raw, samples);
         } else {
             rx_audio_live_submit(scratch, samples);
+        }
+    } else if (qa12 != 0) {
+        if (qa12 == 2) {
+            int idx = atomic_fetch_add(&qa12_tone_idx, 1);
+            rx_audio_live_submit(qa12_tone[idx % 10], samples);
+        } else {
+            rx_audio_live_submit(qa_zero_block, samples);
         }
     } else if (phase != 0) {
         /* Hole durante la prueba de eco: mantener el stream continuo con cero,
@@ -1603,6 +1624,176 @@ bool audio_qa_speaker_hw_phase_start(int phase) {
 void audio_qa_speaker_hw_route_abort(void) {
     atomic_store(&qa_hw_abort, true);
 }
+
+static FILE *qa12_fp;
+
+static void qa12_precompute_tone(void) {
+    float phase = 0.0f;
+
+    for (int b = 0; b < 10; b++) {
+        bool on = (b < 5);
+        for (size_t i = 0; i < RX_AUDIO_LIVE_BLOCK_SAMPLES; i++) {
+            if (on) {
+                qa12_tone[b][i] = (int16_t) (519.0f * sinf(phase));
+                phase += 2.0f * 3.14159265358979323846f * 1000.0f / 44100.0f;
+                if (phase > 2.0f * 3.14159265358979323846f) {
+                    phase -= 2.0f * 3.14159265358979323846f;
+                }
+            } else {
+                qa12_tone[b][i] = 0;
+            }
+        }
+    }
+}
+
+static const char *qa12_phase_name(int phase) {
+    switch (phase) {
+        case 1:
+        case 3: return "ZERO";
+        case 2: return "TONE";
+        case 4: return "RAW";
+        default: return "OFF";
+    }
+}
+
+static void qa12_tick(int phase, int elapsed_ms) {
+    static rx_qa_pa_snapshot_t pa;
+    rx_audio_live_stats_t st;
+    rx_audio_live_qa_metrics_t qm;
+    uint32_t reg;
+    uint32_t voice;
+
+    rx_audio_live_get_stats(&st);
+    rx_audio_live_qa_get_metrics(&qm);
+    reg = x6200_control_get(x6200_sple_atue_trx);
+    voice = (reg & 0x8u) ? 1u : 0u;
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_emit_events();
+    if (qa12_fp == NULL) {
+        return;
+    }
+    fprintf(qa12_fp,
+        "%" PRIu64 ",%s,%d,%d,0x%08x,%u,%d,%d,%d,%" PRId64 ",%" PRId64 ","
+        "%u,%u,%u,%u,%u,%u,%u,%u,%u\n",
+        rx_qa_mono_ms() - qa_diag_base.t0_ms, qa12_phase_name(phase),
+        elapsed_ms, (int) rx_audio_live_get_state(), reg, voice,
+        (int) radio_get_state(), pa.stream_state, pa.writable,
+        pa.latency_us, pa.read_index, pa.write_index,
+        qm.submitted_blocks - qa_diag_base.base_metrics.submitted_blocks,
+        st.writes - qa_diag_base.base_stats.writes,
+        st.dropped_blocks - qa_diag_base.base_stats.dropped_blocks,
+        st.underruns - qa_diag_base.base_stats.underruns,
+        st.backpressure - qa_diag_base.base_stats.backpressure,
+        qm.degraded_transitions - qa_diag_base.base_metrics.degraded_transitions,
+        qm.mux_on_ok - qa_diag_base.base_metrics.mux_on_ok,
+        qm.mux_off_ok - qa_diag_base.base_metrics.mux_off_ok);
+    fflush(qa12_fp);
+}
+
+static atomic_bool qa12_running;
+
+static void *qa12_thread(void *arg) {
+    (void) arg;
+    audio_enh_preset_t preset_before = audio_enh_preset_get_current();
+    uint32_t rxvol = x6200_control_get(x6200_rxvol);
+    bool ok = false;
+
+    atomic_store(&qa12_phase, 0);
+    rx_qa_log("QA12 START vol=%u preset=%s reg12_shadow=0x%08x",
+              rxvol, audio_enh_preset_get_name(preset_before),
+              x6200_control_get(x6200_sple_atue_trx));
+    if (!rx_qa_preflight()) {
+        goto done;
+    }
+    rx_qa_diag_begin("qa12");
+    qa12_fp = fopen("/mnt/app_logs/rx_qa12.csv", "w");
+    if (qa12_fp != NULL) {
+        fprintf(qa12_fp, "t_ms,phase,elapsed_ms,router_state,reg12,voice_bit,radio_state,"
+                         "pa_state,pa_writable,pa_latency_us,pa_read_idx,pa_write_idx,"
+                         "submitted,writes,drops,underruns,backpressure,degraded,mux_on,mux_off\n");
+        fflush(qa12_fp);
+    }
+    qa12_precompute_tone();
+    if (!radio_audio_route_set(false)) {
+        rx_qa_log("QA12 FAIL pre-arm BASE");
+        goto cleanup;
+    }
+    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
+    atomic_store(&rx_qa_authorized, true);
+    if (!rx_audio_live_set_enabled(true)) {
+        rx_qa_log("QA12 FAIL router enable");
+        goto cleanup;
+    }
+    if (!rx_qa_wait_state(RX_AUDIO_LIVE_RX_DAC, 2500)) {
+        rx_qa_log("QA12 FAIL no RX_DAC");
+        goto cleanup;
+    }
+    static const int phases[] = {1, 2, 3, 4};
+    for (size_t p = 0; p < sizeof(phases) / sizeof(phases[0]); p++) {
+        int phase = phases[p];
+        qa_diag_phase = qa12_phase_name(phase);
+        atomic_store(&qa12_tone_idx, 0);
+        atomic_store(&qa12_phase, phase);
+        rx_qa_log("QA12 PHASE %s START t_ms=%" PRIu64 " reg12_shadow=0x%08x",
+                  qa12_phase_name(phase), rx_qa_mono_ms() - qa_diag_base.t0_ms,
+                  x6200_control_get(x6200_sple_atue_trx));
+        for (int i = 0; i < 50; i++) {
+            usleep(100000);
+            qa12_tick(phase, (i + 1) * 100);
+            if (radio_get_state() != RADIO_RX ||
+                rx_audio_live_get_state() != RX_AUDIO_LIVE_RX_DAC) {
+                rx_qa_log("QA12 PHASE %s aborted", qa12_phase_name(phase));
+                goto cleanup;
+            }
+            if ((i + 1) % 10 == 0) {
+                rx_qa_diag_sample((int) (p * 5 + (i + 1) / 10));
+            }
+        }
+        rx_qa_log("QA12 PHASE %s END reg12_shadow=0x%08x",
+                  qa12_phase_name(phase), x6200_control_get(x6200_sple_atue_trx));
+    }
+    ok = true;
+
+cleanup:
+    atomic_store(&qa12_phase, 0);
+    atomic_store(&rx_qa_authorized, false);
+    (void) rx_audio_live_set_enabled(false);
+    (void) rx_qa_wait_state(RX_AUDIO_LIVE_BASE, 1500);
+    (void) radio_audio_route_set(false);
+    audio_enh_preset_load(preset_before);
+    if (qa12_fp != NULL) {
+        qa12_tick(0, 0);
+        fclose(qa12_fp);
+        qa12_fp = NULL;
+    }
+    rx_qa_diag_end();
+    rx_qa_log("QA12 %s vol=%u reg12_shadow=0x%08x state=%d",
+              ok ? "DONE" : "FAIL", x6200_control_get(x6200_rxvol),
+              x6200_control_get(x6200_sple_atue_trx), (int) radio_get_state());
+    atomic_store(&qa12_running, false);
+    return NULL;
+done:
+    rx_qa_log("QA12 DONE_NO_START");
+    atomic_store(&qa12_running, false);
+    return NULL;
+}
+
+bool audio_qa_speaker_qa12_start(void) {
+    bool expected = false;
+    pthread_t th;
+
+    if (!atomic_compare_exchange_strong(&qa12_running, &expected, true)) {
+        rx_qa_log("QA12 REFUSE reentry");
+        return false;
+    }
+    if (pthread_create(&th, NULL, qa12_thread, NULL) != 0) {
+        atomic_store(&qa12_running, false);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
 
 #endif
 
