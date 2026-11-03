@@ -242,3 +242,10 @@ conservando reg24=0x28; diffs 4 B vs candidato actual, 5 B vs oficial. Callers d
 sólo en voice_rec=1; reg0x36/37/39/filtros sin cambios. H1 .xgf
 SHA256 `df1e274f9e6fe59c00c1ebe6aeec5dced3a07f398ecd04ed503380df75c5d488`.
 **No flasheado; requiere autorización.** `H1_PATCH_READY=YES`.
+
+
+## 23. QA32 — Flash H1 y resultado
+
+Autorización específica H1; overlay con sólo H1; IAP/XMODEM completo; reinicio; BASE 1.0.8.
+A/B/A directo: A2160,7 / B143,0 / C1655,3. **H1 no recupera RX**. `H1_RESULT=FAIL_FUNCTIONAL`.
+PCM DAC aceptado 96000 frames; audible no verificado. Radio restaurada; MCU con H1; sin nuevo flash.
