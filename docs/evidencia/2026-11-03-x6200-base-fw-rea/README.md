@@ -208,3 +208,11 @@ la radio reinició y volvió a comunicar (BASE 1.0.8). Segundo intento escribió
 `x6200-108-voice-keep-rx.xgf` (SHA256 `cc7b4aca…`) con IAP/XMODEM vendor: 524288 bytes, 512
 paquetes, 100 %, `UiFwUpgrade finished 0`. Radio reiniciada y BASE 1.0.8. Sin TX/PTT/ATU/Bluetooth.
 Prueba de audio DSP pendiente.
+
+
+## 19. QA28 — A/B/A RX con DAC
+
+Ver `qa28-rx-dac-validation.md`. A BASE RMS2068, B DAC+ZERO 142, C BASE2072.
+`BASE_RX_PRESERVED_WITH_DAC=NO`; `DAC_FEEDBACK_IN_CAPTURE=INCONCLUSIVE`;
+`LINUX_DSP_RX_CAPTURE=FAIL`; `LINUX_DSP_SPEAKER=NOT_VERIFIED`; `BASE_RETURN=PASS`.
+ALSA/params/GUI restaurados; sin TX/BT; sin nuevo flash.
