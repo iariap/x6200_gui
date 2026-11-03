@@ -233,3 +233,12 @@ Ver `qa30-fpga-config-analysis.md`. Secuencia DAC: reg0x34 campo+bit0x40, reg0x3
 filtros 0x3B/3C; BASE `0x450C8` rutas 0..5. Candidato principal no confirmado: bit0x40 de
 reg0x34. PCM ALSA aceptado 96000 frames BASE/DAC; MUX por helper; audible NOT_VERIFIED.
 SOFTWARE_ONLY_INCONCLUSIVE; H1 (omitir ORR 0x40 en 0x080439CA) documentada, no generada.
+
+
+## 22. QA31 — Candidato H1 offline
+
+Ver `qa31-h1-candidate.md`. H1 sobre `0x080439CA`: `43 f0 40 03` → `00 bf 00 bf` (NOPs),
+conservando reg24=0x28; diffs 4 B vs candidato actual, 5 B vs oficial. Callers del helper
+sólo en voice_rec=1; reg0x36/37/39/filtros sin cambios. H1 .xgf
+SHA256 `df1e274f9e6fe59c00c1ebe6aeec5dced3a07f398ecd04ed503380df75c5d488`.
+**No flasheado; requiere autorización.** `H1_PATCH_READY=YES`.
