@@ -32,3 +32,14 @@ Fecha: 2026-11-03. H1 instalado. Sin nuevo flash.
 - Si no oyó nada: la ruta DAC/MUX o el volumen no entrega el PCM al parlante.
 
 Estado: ALSA diff vacío; GUI original; RX; sin TX/PTT/ATU/Bluetooth; sin nuevo flash.
+
+## Observación del propietario posterior
+
+“Hay mucho QRM, 9 de ruido.”
+
+- El patrón se reprodujo y ALSA confirmó `frames_total=172800`, `drain=0`.
+- La **audibilidad del patrón queda INCONCLUSA** por QRM S9; no se puede atribuir la
+  falta de identificación al DAC ni al DSP.
+- No se repitió la prueba ni se cambió volumen/frecuencia del operador.
+- Gates sin cambios: `LINUX_DSP_SPEAKER=NOT_VERIFIED`; `TONES_DELIVERED=YES`;
+  `AUDIBILITY_INCONCLUSIVE_QRM`.

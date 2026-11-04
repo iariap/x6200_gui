@@ -264,3 +264,10 @@ PulseAudio. La captura ADC sigue baja en DAC. `SPEAKER_AUDIO_HEARD=YES` (reporte
 Patrón de tres beeps de 1 kHz, 0,6 s con 0,4 s de silencio, por `hw:0,0` con DAC seleccionado;
 `frames_total=172800`, `drain=0`. Retorno a BASE, GUI/PA/ALSA restaurados. Audibilidad pendiente
 de reporte del propietario; `LINUX_DSP_SPEAKER` aún NOT_VERIFIED. Sin nuevo flash.
+
+
+## 26. QA34 — QRM S9
+
+El patrón se entregó a ALSA (`drain=0`), pero el propietario reporta QRM S9 y no puede
+identificar los beeps. Audibilidad **INCONCLUSA_QRM**; no se repitió ni se cambió la radio.
+No nuevo flash.
