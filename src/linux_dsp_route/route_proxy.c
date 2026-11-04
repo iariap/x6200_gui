@@ -71,6 +71,7 @@ route_err_t route_proxy_split_set(route_proxy_t *p, bool on) {
     return route_proxy_write_reg12(p, next);
 }
 route_err_t route_proxy_poweroff(route_proxy_t *p) { return rmw(p, ROUTE_REG_POWER_OFF, 0u); }
+route_err_t route_proxy_calibration_set(route_proxy_t *p, bool on) { return rmw(p, on ? 0x8000u : 0u, on ? 0u : 0x8000u); }
 route_err_t route_proxy_record_set(route_proxy_t *p, bool on) {
     (void)on;
     if (p == NULL) return ROUTE_ERR_INVALID;

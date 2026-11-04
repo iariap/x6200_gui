@@ -9,7 +9,10 @@ tests/linux-dsp-integration/run_tests.sh
 -> 88 comprobaciones, 0 fallos    (proxy GUI/libaether: RMW serializado, voice_rec rechazado,
                                    PTT/ATU/split, TX disable-first ordenado, bus-fail cache inválida,
                                    timeout sin caché falsa, 40 escrituras serializadas)
-   total 325 comprobaciones, 0 fallos
+-> 52 comprobaciones, 0 fallos    (call-sites interpuestos: delegación OFF, reg12 sólo proxy,
+                                   record OWNERSHIP, host_cmd ATU directo, idle suprimido,
+                                   20 PTT concurrentes, timeout sin original)
+   total 377 comprobaciones, 0 fallos
 ```
 Cubre (208): boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
 TX/ATU disable-first y bus-fail, ownership/token/PID/STALE, apply_shared sin voice_rec, lease restore

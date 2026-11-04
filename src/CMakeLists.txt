@@ -98,7 +98,9 @@ jpeg
 # QA-LINUX-DSP-INTEGRATION (#362): wiring branch-local, DEFAULT OFF. Sólo con
 # -DX6200_LINUX_DSP_ROUTE=ON se compilan los hooks en la GUI.
 if(X6200_LINUX_DSP_ROUTE)
-    target_sources(${PROJECT_NAME} PRIVATE linux_dsp_route/route_hooks.c)
+    target_sources(${PROJECT_NAME} PRIVATE linux_dsp_route/route_hooks.c
+                                              linux_dsp_route/route_libaether_proxy.c)
     target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_LINUX_DSP_ROUTE=1)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS} x6200_linux_dsp_route)
     target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/linux_dsp_route)
 endif()

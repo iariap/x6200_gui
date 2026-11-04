@@ -112,3 +112,14 @@ cmake -DX6200_LINUX_DSP_ROUTE=ON   -> exit 1 configure por pkg-config ausente (s
   SKIP entorno; build GUI completa feature ON no verificada (no PASS)
 check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
 ```
+
+## 9. Call-sites stage (task-25)
+
+```
+# src/linux_dsp_route/route_libaether_proxy.[ch]: interposicion fuerte de la API libaether del reg12
+# (record/ptt/atu_tune/atu_set/modem/swrscan/split/poweroff/calibration/cmd(12)) + idle suprimido;
+# dlsym(RTLD_NEXT) para no-route; host_cmd ATU directo; tests con stubs (ROUTE_LIB_PROXY_TEST).
+# src/CMakeLists: wrapper en target GUI solo feature ON + dl; run_tests.sh: test_callsites + ARM object.
+tests/.../run_tests.sh -> 208 + 29 + 88 + 52 = 377 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK; ARM route_libaether_proxy.arm.on.o; QEMU_SELF_CHECK=PASS
+```

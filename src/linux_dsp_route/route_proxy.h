@@ -29,6 +29,7 @@ route_err_t route_proxy_modem_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_swrscan_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_split_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_poweroff(route_proxy_t *p);
+route_err_t route_proxy_calibration_set(route_proxy_t *p, bool on);
 /* voice_rec: la GUI NO lo escribe; el arbitro es el dueño. Devuelve OWNERSHIP. */
 route_err_t route_proxy_record_set(route_proxy_t *p, bool on);
 /* Host commands de ATU (x6200_control_host_cmd) quedan DIRECTOS: no tocan el reg12. */

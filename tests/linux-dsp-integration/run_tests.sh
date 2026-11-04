@@ -18,6 +18,11 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$HERE/test_proxy.c" -o "$OUT/test_proxy" -lpthread
 "$OUT/test_proxy"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" -I"$HERE/stubs" \
+    -DROUTE_LIB_PROXY_TEST -DX6200_LINUX_DSP_ROUTE=1 $COMMON \
+    "$SRC/route_proxy.c" "$SRC/route_libaether_proxy.c" \
+    "$HERE/test_callsites.c" -o "$OUT/test_callsites" -lpthread
+"$OUT/test_callsites"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
@@ -28,6 +33,9 @@ if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
         -I"$SRC" -I"$HERE/stubs" -c "$SRC/route_transport_x6200.c" -o "$OUT/route_transport_x6200.arm.on.o"
     file "$OUT/route_transport_x6200.arm.on.o"
+    "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
+        -I"$SRC" -I"$HERE/stubs" -c "$SRC/route_libaether_proxy.c" -o "$OUT/route_libaether_proxy.arm.on.o"
+    file "$OUT/route_libaether_proxy.arm.on.o"
     "$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
         -I"$SRC" -I"$HERE/stubs" $COMMON \
         "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$SRC/route_hooks.c" \

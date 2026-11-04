@@ -15,7 +15,8 @@ escrituras de transporte.
 | Servicio árbitro/supervisor (`--arbiter/--supervisor/--self-check`) | `route_service_main.c` | compila; supervisa sin escribir reg12 |
 | Ciclo de vida con `x6200_daemon` | `rootfs/usr/sbin/x6200_daemon` | arranca el servicio sólo si existe binario (feature ON) **y** gate `/etc/x6200_route_qa.enable`; en OFF no-op |
 | CMake/install | `CMakeLists.txt`, `src/CMakeLists.txt`, `src/linux_dsp_route/CMakeLists.txt` | option OFF; subdir/install sólo ON |
-| **Proxy GUI/libaether→IPC→arbitro** | `route_proxy.[ch]` + tests (88 checks) | cableado como API; falta reemplazo mecánico de call-sites + idle |
+| **Proxy GUI/libaether→IPC→arbitro** | `route_proxy.[ch]` + tests (88 checks) | cableado como API |
+| **Call-sites libaether interpuestos** | `route_libaether_proxy.[ch]` + tests (52 checks) | cableado feature ON: reg12 sólo proxy, record OWNERSHIP, idle suprimido |
 
 ## Desactivado / pendiente (bloqueo exacto)
 
