@@ -32,6 +32,22 @@ tests/linux-dsp-integration/run_tests.sh
   -> ARM: route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
   -> qemu-arm-static -L sysroot route_arbiter.arm --self-check -> "0 fails, writes=3" -> QEMU_SELF_CHECK=PASS
 
-## 4. Validacion (commit documental)
-git diff --check -> pendiente de registrar abajo
-check-matrix / risk -> abajo
+## 4. Validacion (commit documental cb7a31b7)
+
+```
+git diff --check 681074e0 HEAD                    -> exit 0
+tests/linux-dsp-integration/run_tests.sh          -> 208 comprobaciones, 0 fallos
+  -> ARM: route_arbiter.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails, QEMU_SELF_CHECK=PASS
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del codigo nuevo: uv sync/x6200-ab themes/contracts por ~/.cache/uv read-only
+    (os error 30); check_wcag_rendered/check_widget_text/check_drawbuf_partial porque el worktree no
+    tiene el submodulo lvgl inicializado; banco QEMU BLOCKED (falta entorno del owner).
+  - `[check] bash -n tests/linux-dsp-integration/run_tests.sh` -> ok
+python3 asf/scripts/risk.py x6200 --files <29 archivos> -> exit 0
+  risk="high", reviewers=["reviewer-data","reviewer-frontend","reviewer-infra","reviewer-security"]
+  (cambios en CMakeLists.txt/src/linux_dsp_route; feature DEFAULT OFF, sin wiring de produccion)
+```
+
+Nota honesta: **no se declara PASS** de build de imagen/QEMU-harness/contrato/fisico. check-matrix exit 1
+es entorno preexistente; los gates de codigo del modulo pasan via `run_tests.sh` host+ARM+QEMU.
+La feature esta DEFAULT OFF y no se instala/arranca.
