@@ -76,5 +76,19 @@ grep del pseudocódigo (logs/qa390-scan.txt / qa390-lit.txt / qa390-dac.txt):
 ## 5. Validación del PR (docs + tools)
 
 ```
-[pendiente: check-matrix / risk / git diff --check sobre el commit documental]
+git diff --check                                                       -> exit 0 (sin whitespace errors)
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree>  -> exit 1
+  - FAIL gates de entorno, NO del diff:
+      * check_drawbuf_partial: el worktree nuevo no tiene el submódulo lvgl inicializado
+        (src/lvgl ausente) -> CMake no encuentra lvgl.
+      * 2 gates con `uv`: ~/.cache/uv es read-only en este host
+        ("Read-only file system (os error 30)").
+  - `[check] bash -n tools/rea-native-rx/run.sh` -> ok
+  - resto de gates: [SKIP] por no tocar src/**, workflows, etc.
+python3 asf/scripts/risk.py x6200 --files $(git diff --name-only 681074e0 HEAD) -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"],
+  human_approval=false, auto_approve=false (incluye docs/ + tools/rea-native-rx/*.java|sh)
 ```
+Nota honesta: el exit 1 de check-matrix es **preexistente/entorno** (submódulo lvgl sin inicializar en el
+worktree nuevo y cache uv read-only), no causado por este diff, que es sólo `docs/**` y `tools/rea-native-rx/**`.
+No se declara PASS de build/QEMU/contrato (no aplica; no hay cambios de código de producción).
