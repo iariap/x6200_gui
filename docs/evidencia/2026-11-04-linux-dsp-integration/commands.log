@@ -101,3 +101,14 @@ cmake -S . -B /tmp/qa-cmake-on -DX6200_LINUX_DSP_ROUTE=ON -> exit 1 en configure
 
 Bloqueo restante: reemplazo mecanico de call-sites libaether/GUI + idle por proxy total; luego
 habilitacion QA y protocolo fisico. RX_LINUX sigue bloqueado, PRODUCTION_READY=FAIL.
+
+## 8. Validacion proxy (commit aa06b2e7)
+
+```
+git diff --check 681074e0 HEAD     -> exit 0
+tests/.../run_tests.sh             -> 208 + 29 + 88 = 325 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK (host stubs SDK); ARM route_transport_x6200.arm.on.o; QEMU_SELF_CHECK=PASS
+cmake -DX6200_LINUX_DSP_ROUTE=ON   -> exit 1 configure por pkg-config ausente (speexdsp, etc.):
+  SKIP entorno; build GUI completa feature ON no verificada (no PASS)
+check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
+```
