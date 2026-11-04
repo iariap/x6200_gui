@@ -95,3 +95,10 @@ El mismatch ABI de task-27 era por headers del sysroot vs headers del repo; usan
 la GUI feature ON compila/linkea. Logs en `logs/build-feature-on-gui-arm.log` y
 `logs/cmake-feature-on-toolchain-refs-configure.log`. Dependencia exacta: checkout de X6200Control
 (0.15.3) cuyo `flow.h` tenga `samples[512]`/552 B; sin él, sysroot del entorno no coincide.
+
+## Build reproducible (task-30)
+
+`tools/linux-dsp-integration/reproducible-build.sh` → **PASS** (log `logs/repro-build.log`): aplica
+patch con sha256 e idempotencia en copia temporal, compila libaether parcheada, feature-ON GUI+servicio
+ARM EABI5, normal OFF BASE (sin ruta/servicio/símbolos), corre 614 checks 0 fallos y empaqueta QA en
+`/tmp/linux-dsp-repro/pkg` sin deploy. Detalle en `reproducible-build.md`.

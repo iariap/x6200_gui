@@ -206,3 +206,18 @@ cmake -DX6200_LINUX_DSP_ROUTE=ON -DX6200_CTRL_HAVE_BULK_WRITE=ON + headers refs 
      (nm -D: U x6200_control_bulk_write)
 tests: 614 comprobaciones, 0 fallos (incluye test_patched: idle refresh bulk/voice merge/TX strip/sombra)
 ```
+
+## 17. Reproducible build tooling (task-30)
+
+```
+tools/linux-dsp-integration/reproducible-build.sh patch-only
+  -> patch sha256 OK (0d6dd1c7...); aplica 1 vez, 2da rechazada (idempotente)
+tools/linux-dsp-integration/reproducible-build.sh
+  -> parche aplicado en copia temporal (refs intacto)
+  -> build libaether parcheada OK
+  -> feature-ON ARM GUI+servicio OK (x6200_control_bulk_write referenciado)
+  -> normal OFF ARM GUI OK; sin linux_dsp_route/servicio/símbolos => BASE
+  -> tests host/ARM/QEMU OK
+  -> paquete /tmp/linux-dsp-repro/pkg (GUI+servicio+MANIFEST+SHA256SUMS), NO deploy
+  -> REPRO_RC=0 PASS reproducible build completo
+```
