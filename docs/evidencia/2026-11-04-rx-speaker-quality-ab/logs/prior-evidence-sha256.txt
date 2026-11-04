@@ -1,0 +1,6 @@
+55fabf149e6d1a7ef837382aeb696a9dbc9b884a254e4fcc4a3eadabb4d76e29  x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/rx-test2-repeat.md
+d1ac289f5eacc5d901c4294aca57bf9e732db63cca91448992dfc790e676ad94  x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/rx-test3-ab.md
+d55ef0f3d118fabfdf94debbfb55e96be8d470defc3174424d303d226ad15147  x6200_qa/docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+78a5042a12c7e79581fea9735385dacf9a75a638ef3bb49a06af224a34111fc0  x6200_qa/docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+13d81c7152f7990435bf15bd90409f928248656ad4d74c7f6f42b3e10dc9731b  x6200_qa/docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.csv
+c340cd7e0cc01729d5b5dd3b6a10f1161eaed903f11c66b1c40f36f14bc11160  x6200_qa/docs/evidencia/2026-10-29-rx-audible-route-363/README.md

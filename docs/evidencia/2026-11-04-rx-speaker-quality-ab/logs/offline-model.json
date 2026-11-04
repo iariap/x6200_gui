@@ -1,0 +1,41 @@
+{
+  "consistency_checks": {
+    "capture_44100": true,
+    "mono_s16": true,
+    "scratch_4410": true,
+    "enh_frame_441": true,
+    "capture_only": true,
+    "router_not_in_base": true,
+    "block_100ms": true,
+    "ring_400ms": true,
+    "nr_latency_20ms": true,
+    "router_1p8s": true
+  },
+  "consistency_values": {
+    "rate_hz": 44100,
+    "frame_samples": 441,
+    "scratch_samples": 4410,
+    "block_ms": 100.0,
+    "ring_ms": 400.0,
+    "nr_latency_ms": 20.0,
+    "router_writes": 18,
+    "router_drops": 0,
+    "router_underruns": 0,
+    "router_audio_s": 1.8
+  },
+  "offline_model": {
+    "fs": 8000,
+    "n": 4000,
+    "bp_inband_power": 0.012310297769953217,
+    "bp_outband_power": 0.004956465387239097,
+    "bp_outband_atten_db": -15.719,
+    "bp_inband_change_db": -0.014,
+    "notch_700_atten_db": -19.244,
+    "agc_peak_before": 0.935,
+    "agc_peak_after": 0.6634,
+    "clip_before": 0,
+    "clip_after": 0,
+    "label": "MODEL_OFFLINE_NOT_FIRMWARE_NOT_ACOUSTIC"
+  },
+  "result": "PASS"
+}
