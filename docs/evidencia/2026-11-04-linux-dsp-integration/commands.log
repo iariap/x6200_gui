@@ -145,3 +145,14 @@ cmake --build cmake-on --target x6200_route_service -> FAIL: flags ARM (-mfpu=ne
 cmake con CMAKE_C_COMPILER=arm-buildroot-gcc -> configure FAIL (falta toolchain file/entorno Buildroot)
 => build GUI/service feature ON: SKIP de entorno, no PASS; capacidad/path exactos en tests-build-results.md
 ```
+
+## 12. Validacion final idle/build (commit 9a55c152)
+
+```
+git diff --check -> exit 0
+tests/.../run_tests.sh -> 208 + 29 + 88 + 53 = 378 comprobaciones, 0 fallos
+  FEATURE_ON_BUILD=RUN_OK; ARM wrapper/transporte objects; QEMU_SELF_CHECK=PASS
+cmake -DX6200_LINUX_DSP_ROUTE=ON (lvgl + ROM sysroot pkgconfig) -> CONFIGURE/GEN OK
+  build GUI/service feature ON -> SKIP entorno (flags ARM con cc host / falta toolchain file Buildroot)
+check-matrix/risk -> entorno preexistente / risk high (feature OFF); sin PASS fisico ni de build completa
+```
