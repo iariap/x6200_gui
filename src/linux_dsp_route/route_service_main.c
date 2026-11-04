@@ -24,6 +24,10 @@ static route_arbiter_t *g_arb;
 static void on_stop(int sig) { (void)sig; g_stop = 1; }
 
 #ifdef X6200_LINUX_DSP_ROUTE
+#include <aether_radio/x6200_control/low/control.h>
+/* Some SDK headers do not expose this declaration in every build mode.
+ * Weak: host/QEMU builds without the real transport resolve it to NULL. */
+extern bool x6200_control_init(void) __attribute__((weak));
 int route_transport_x6200_write_reg12(void *ctx, uint32_t value);
 #ifdef X6200_CTRL_HAVE_BULK_WRITE
 int route_transport_x6200_write_block(void *ctx, const uint8_t *block, size_t len);
@@ -70,6 +74,12 @@ int main(int argc, char **argv) {
     if (strcmp(mode, "--arbiter") == 0) {
         route_bus_t bus;
 #ifdef X6200_LINUX_DSP_ROUTE
+        /* QA arbiter owns the transport in this process. The normal GUI daemon
+         * is stopped for the QA session, so it must open/init I2C explicitly. */
+        if (x6200_control_init == NULL || !x6200_control_init()) {
+            fprintf(stderr, "x6200_route_service: x6200_control_init failed (i2c not opened)\n");
+            return 1;
+        }
         bus.write_reg12 = route_transport_x6200_write_reg12;
 #ifdef X6200_CTRL_HAVE_BULK_WRITE
         bus.write_block = route_transport_x6200_write_block;
