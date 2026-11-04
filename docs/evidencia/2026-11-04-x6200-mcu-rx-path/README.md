@@ -14,3 +14,6 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 - `qa41-dma-callbacks.md`: QA41 — DMA config/callbacks; sin consumidor/productor ni procesamiento RX→TX.
 
 - `qa42-i2s3-endpoint.md`: QA42 — pines PA15/PC10/PC11/PC12 AF6; endpoint externo UNKNOWN; consumidores de progreso en FFT; inserción no lista.
+
+- `qa43-audio-processor-endpoint.md`: QA43 — FCC photos, pines I2S3 verificados, endpoint/codec UNKNOWN; UNRESOLVED.
+- `qa43/`: PDF FCC 7396922 + imágenes de páginas 5/6 (evidencia pública).
