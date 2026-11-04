@@ -283,3 +283,10 @@ Retorno a BASE, GUI/PA/ALSA restaurados; sin flash. Audibilidad pendiente.
 
 Patrón 1.2/2.4/3.6 kHz, amplitud PCM 24000, `frames_total=196800`, `drain=0`. Retorno BASE y
 restauración; sin flash. Audibilidad pendiente.
+
+
+## 29. QA35 — sin tono audible
+
+Incluso BASE con `DAC Playback Switch=on` y volumen máximo no produjo tono audible; PCM aceptado,
+codec habilitado, QSO nativo audible. `LINUX_DSP_SPEAKER=FAIL` para la ruta PCM probada.
+La UI se reinició por el stop/start controlado, no por reboot del sistema. Sin nuevo flash.
