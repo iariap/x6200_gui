@@ -15,12 +15,25 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
     "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
     "$HERE/test_wiring.c" -o "$OUT/test_wiring" -lpthread
 "$OUT/test_wiring"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_proxy.c" "$HERE/test_proxy.c" -o "$OUT/test_proxy" -lpthread
+"$OUT/test_proxy"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
         "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
         "$SRC/route_service_main.c" -o "$OUT/route_service.arm" -lpthread
     file "$OUT/route_service.arm"
+    # Feature ON (host stubs del SDK): compila adaptador + servicio con X6200_LINUX_DSP_ROUTE=1.
+    "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
+        -I"$SRC" -I"$HERE/stubs" -c "$SRC/route_transport_x6200.c" -o "$OUT/route_transport_x6200.arm.on.o"
+    file "$OUT/route_transport_x6200.arm.on.o"
+    "$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
+        -I"$SRC" -I"$HERE/stubs" $COMMON \
+        "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$SRC/route_hooks.c" \
+        "$SRC/route_transport_x6200.c" "$SRC/route_proxy.c" "$SRC/route_service_main.c" \
+        "$HERE/stubs/x6200_stub.c" -o "$OUT/route_service_feature_on" -lpthread
+    "$OUT/route_service_feature_on" --self-check && echo "FEATURE_ON_BUILD=RUN_OK"
     QEMU=${QEMU:-/usr/bin/qemu-arm-static}
     SYSROOT=${SYSROOT:-$ROOT/../rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot}
     if [ -x "$QEMU" ] && [ -d "$SYSROOT" ]; then

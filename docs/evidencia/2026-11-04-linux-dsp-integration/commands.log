@@ -83,3 +83,21 @@ risk.py --files -> exit 0; risk=high (src/CMake/daemon; feature DEFAULT OFF, no 
 
 Estado: wiring compilable/tested; RX_LINUX **bloqueado** porque el proxy completo de libaether no
 esta cableado; build GUI feature-ON no verificado en este entorno (SKIP honesto). Sin fisico.
+
+## 7. Proxy stage (task-24)
+
+```
+# inventario escritores reg12 en refs/X6200Control/src/control.c: record_set(0x8), ptt_set(0x40000),
+# atu_tune(0x2000 + host_cmd), atu_set(0x1000), modem_set(0x4000), swrscan_set(0x10),
+# split_set(0x2), poweroff(0x10000), calibration_set(0x8000), cmd generico(12), idle(54 regs)
+# src/linux_dsp_route/route_proxy.[ch]: API proxy GUI->IPC->arbitro; record_set rechazado (OWNERSHIP);
+# wrappers PTT/ATU/modem/swrscan/split/poweroff con RMW sobre cache; timeout/cache invalida
+# CMake: proxy agregado al library; run_tests.sh: test_proxy + feature ON host/stub build + ARM object
+tests/.../run_tests.sh -> 208 + 29 + 88 = 325 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK; route_transport_x6200.arm.on.o ELF32 ARM; QEMU_SELF_CHECK=PASS
+cmake -S . -B /tmp/qa-cmake-on -DX6200_LINUX_DSP_ROUTE=ON -> exit 1 en configure por pkg-config
+  ausente (p.ej. speexdsp) => SKIP entorno, build GUI completa feature ON no verificada (no PASS).
+```
+
+Bloqueo restante: reemplazo mecanico de call-sites libaether/GUI + idle por proxy total; luego
+habilitacion QA y protocolo fisico. RX_LINUX sigue bloqueado, PRODUCTION_READY=FAIL.

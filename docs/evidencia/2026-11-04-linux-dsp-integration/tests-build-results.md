@@ -6,7 +6,10 @@
 tests/linux-dsp-integration/run_tests.sh
 -> 208 comprobaciones, 0 fallos   (arbitro/IPC/supervisor)
 -> 29 comprobaciones, 0 fallos    (wiring: worker PCM/control, sink, TTS, QA gate, IPC real)
-   total 237 comprobaciones, 0 fallos
+-> 88 comprobaciones, 0 fallos    (proxy GUI/libaether: RMW serializado, voice_rec rechazado,
+                                   PTT/ATU/split, TX disable-first ordenado, bus-fail cache inválida,
+                                   timeout sin caché falsa, 40 escrituras serializadas)
+   total 325 comprobaciones, 0 fallos
 ```
 Cubre (208): boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
 TX/ATU disable-first y bus-fail, ownership/token/PID/STALE, apply_shared sin voice_rec, lease restore
@@ -24,6 +27,8 @@ run_tests.sh (segunda parte)
 -> route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
 -> qemu-arm-static -L <sysroot> route_service.arm --self-check
 -> route-service self-check: 0 fails, writes=3
+-> FEATURE_ON_BUILD=RUN_OK (host con stubs del SDK, X6200_LINUX_DSP_ROUTE=1)
+-> route_transport_x6200.arm.on.o ELF32 ARM EABI5 (feature ON, toolchain ROM)
 -> QEMU_SELF_CHECK=PASS
 ```
 
@@ -39,6 +44,14 @@ toolchain ARM directamente, que es la evidencia usada.
 - `git diff --check` → exit 0.
 - `check-matrix` → exit 1 **por entorno** (uv cache read-only + lvgl no inicializado); no por el diff.
 - `risk.py --files` → ver `commands.log`.
+
+## Feature ON build
+
+- Módulos feature ON compilados/ejecutados en host con stubs del SDK (`tests/linux-dsp-integration/stubs/`):
+  `X6200_LINUX_DSP_ROUTE=1`, servicio `--self-check` OK; adaptador de transporte compilado ARM feature ON.
+- **Build GUI completa feature ON NO posible en este entorno**: `cmake -DX6200_LINUX_DSP_ROUTE=ON`
+  falla en configure por dependencias pkg-config ausentes (p.ej. `speexdsp`; mismo faltante de
+  sysroot/buildroot/lvgl del entorno). Se registra SKIP/entorno, no PASS. No es un error del código.
 
 ## Feature OFF / build normal
 
