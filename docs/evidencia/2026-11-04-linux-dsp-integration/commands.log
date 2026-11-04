@@ -32,7 +32,25 @@ tests/linux-dsp-integration/run_tests.sh
   -> ARM: route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
   -> qemu-arm-static -L sysroot route_arbiter.arm --self-check -> "0 fails, writes=3" -> QEMU_SELF_CHECK=PASS
 
-## 4. Validacion (commit documental cb7a31b7)
+## 4. Wiring stage (task-23, branch-local DEFAULT OFF)
+
+```
+# Hooks GUI guardados #ifdef X6200_LINUX_DSP_ROUTE: src/audio.c (post-Speex submit, TTS priority),
+# src/radio.c (TX/ATU disable-first), src/CMakeLists (sources/defines sólo ON)
+# route_client_worker.[ch] (SPSC ring 4x4410, worker dedicado, sink, TTS), route_sink.h,
+# route_wiring.[ch] (QA gate env+archivo, activacion RX_LINUX BLOQUEADA por proxy incompleto),
+# route_transport_x6200.c (x6200_control_cmd, mismo registro/framing), route_hooks.[ch],
+# route_service_main.c (--arbiter/--supervisor/--self-check), CMake option/install sólo ON,
+# rootfs/usr/sbin/x6200_daemon: arranca servicio sólo si binario ON + /etc/x6200_route_qa.enable
+tests/linux-dsp-integration/run_tests.sh
+  -> 208 comprobaciones, 0 fallos (arbitro/IPC/supervisor)
+  -> 29 comprobaciones, 0 fallos  (wiring worker/sink/QA gate/IPC real/TTS/no deadlock)
+  -> ARM route_service.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails; QEMU=PASS
+```
+Nota: la activacion RX_LINUX sigue BLOQUEADA (proxy completo de libaether no cableado); el worker/QA
+gate/servicio se prueban con mocks. Build completo GUI feature-ON no verificado (entorno).
+
+## 5. Validacion (commit documental previo cb7a31b7)
 
 ```
 git diff --check 681074e0 HEAD                    -> exit 0

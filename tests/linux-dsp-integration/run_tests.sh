@@ -1,5 +1,5 @@
 #!/bin/sh
-# QA-LINUX-DSP-INTEGRATION — tests host + ARM cross (sin hardware).
+# QA-LINUX-DSP-INTEGRATION — tests host (arbiter/IPC/supervisor + wiring worker) + ARM/QEMU.
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/../.." && pwd)
@@ -7,24 +7,24 @@ SRC="$ROOT/src/linux_dsp_route"
 OUT=${OUT:-/tmp/qa-linux-dsp-integration}
 mkdir -p "$OUT"
 CC=${CC:-gcc}
-"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" \
-    "$SRC/route_shadow.c" "$SRC/route_arbiter.c" "$SRC/route_ipc.c" "$SRC/route_supervisor.c" \
+COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_supervisor.c"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$HERE/test_integration.c" -o "$OUT/test_integration" -lpthread
 "$OUT/test_integration"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
+    "$HERE/test_wiring.c" -o "$OUT/test_wiring" -lpthread
+"$OUT/test_wiring"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
-    "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" \
-        "$SRC/route_shadow.c" "$SRC/route_arbiter.c" "$SRC/route_ipc.c" "$SRC/route_supervisor.c" \
-        "$SRC/route_daemon_main.c" -o "$OUT/route_arbiter.arm" -lpthread
-    file "$OUT/route_arbiter.arm"
+    "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+        "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
+        "$SRC/route_service_main.c" -o "$OUT/route_service.arm" -lpthread
+    file "$OUT/route_service.arm"
     QEMU=${QEMU:-/usr/bin/qemu-arm-static}
     SYSROOT=${SYSROOT:-$ROOT/../rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot}
     if [ -x "$QEMU" ] && [ -d "$SYSROOT" ]; then
-        if "$QEMU" -L "$SYSROOT" "$OUT/route_arbiter.arm" --self-check; then
-            echo "QEMU_SELF_CHECK=PASS"
-        else
-            echo "QEMU_SELF_CHECK=FAIL (se registra, no se oculta)"
-        fi
+        "$QEMU" -L "$SYSROOT" "$OUT/route_service.arm" --self-check && echo "QEMU_SELF_CHECK=PASS"
     else
         echo "QEMU_SELF_CHECK=SKIP (falta qemu-arm-static o sysroot)"
     fi

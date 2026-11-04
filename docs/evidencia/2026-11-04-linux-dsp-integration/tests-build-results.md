@@ -4,21 +4,26 @@
 
 ```
 tests/linux-dsp-integration/run_tests.sh
--> 208 comprobaciones, 0 fallos
+-> 208 comprobaciones, 0 fallos   (arbitro/IPC/supervisor)
+-> 29 comprobaciones, 0 fallos    (wiring: worker PCM/control, sink, TTS, QA gate, IPC real)
+   total 237 comprobaciones, 0 fallos
 ```
-Cubre: boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
+Cubre (208): boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
 TX/ATU disable-first y bus-fail, ownership/token/PID/STALE, apply_shared sin voice_rec, lease restore
 ≤250 ms, PCM inválido/duplicado/overflow/missing, sink/generado/captura, supervisor
 (REQUEST_RESTORE/FAULT/restored), IPC timeout acotado, restart sombra inválida, serialización 50
 requests sin deadlock, preservación de bits compartidos, PCM missing bloquea.
+Cubre wiring (29): worker post-Speex (RAW rechazado), sink fake open/write/close, overflow/ring
+acotado, TTS priority, QA gate OFF por defecto (env/archivo), wiring disabled, worker+IPC real
+(heartbeat/enable/RX_LINUX/TX disable-first/PCM al sink), productor 200 bloques sin deadlock.
 
 ## ARM / QEMU
 
 ```
 run_tests.sh (segunda parte)
 -> route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
--> qemu-arm-static -L <sysroot> route_arbiter.arm --self-check
--> route-arbiter self-check: 0 fails, writes=3
+-> qemu-arm-static -L <sysroot> route_service.arm --self-check
+-> route-service self-check: 0 fails, writes=3
 -> QEMU_SELF_CHECK=PASS
 ```
 
@@ -34,6 +39,13 @@ toolchain ARM directamente, que es la evidencia usada.
 - `git diff --check` → exit 0.
 - `check-matrix` → exit 1 **por entorno** (uv cache read-only + lvgl no inicializado); no por el diff.
 - `risk.py --files` → ver `commands.log`.
+
+## Feature OFF / build normal
+
+Normal build: `X6200_LINUX_DSP_ROUTE=OFF` ⇒ no se compila subdirectorio, no hooks en GUI, no binario
+de servicio instalado, daemon no arranca nada (condición binario+gate). Sin cambios de
+comportamiento/BASE. El build completo GUI feature-ON no se pudo verificar en este entorno (falta
+sysroot/lvgl/buildroot); se registra como SKIP honesto, no como PASS.
 
 ## No físico
 
