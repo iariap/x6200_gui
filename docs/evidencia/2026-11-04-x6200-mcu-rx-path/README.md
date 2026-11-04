@@ -12,3 +12,5 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 - `qa40-dma-sizes-processing.md`: QA40 — DMA 32/16 bits, longitudes en unidades; consumidor/productor no encontrados.
 
 - `qa41-dma-callbacks.md`: QA41 — DMA config/callbacks; sin consumidor/productor ni procesamiento RX→TX.
+
+- `qa42-i2s3-endpoint.md`: QA42 — pines PA15/PC10/PC11/PC12 AF6; endpoint externo UNKNOWN; consumidores de progreso en FFT; inserción no lista.
