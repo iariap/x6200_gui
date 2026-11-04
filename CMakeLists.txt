@@ -32,6 +32,9 @@ endif()
 message(STATUS "x6200_gui: fuente md5 ${X6200_FUENTE_MD5}")
 
 include_directories(.)
+# QA-LINUX-DSP-INTEGRATION (#362): infraestructura branch-local, DEFAULT OFF.
+option(X6200_LINUX_DSP_ROUTE "Build branch-local Linux-DSP safe speaker route infra (default OFF)" OFF)
+
 include_directories(third-party/rapidxml)
 include_directories(third-party/utf8)
 
@@ -49,6 +52,9 @@ if(ENABLE_TESTING)
 else()
         add_subdirectory(third-party/js8core)
         add_subdirectory(src)
+if(X6200_LINUX_DSP_ROUTE)
+    add_subdirectory(src/linux_dsp_route)
+endif()
         add_subdirectory(btcat)
         add_subdirectory(lv_drivers)
         add_subdirectory(sql)

@@ -1,0 +1,4 @@
+208 comprobaciones, 0 fallos
+/tmp/qa-linux-dsp-integration/route_arbiter.arm: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, not stripped
+route-arbiter self-check: 0 fails, writes=3
+QEMU_SELF_CHECK=PASS

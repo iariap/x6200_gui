@@ -1,0 +1,37 @@
+# Commands log — QA-LINUX-DSP-INTEGRATION — 2026-11-04 UTC (offline)
+
+## 0. Base / PRs / worktree
+cd x6200_gui && git fetch fork -> ok
+git rev-parse fork/main -> 681074e0adac5a79f0392b4e51284167abf5e342
+git rev-parse origin/main -> e1476ece... (distinto, NO usado); main local 6a29687d intacto
+gh pr view 394/393/392/391/389/388/386/385/368/370/373/384 --json headRefOid,state
+  -> #394 56954c2d, #393 25ae632a, #392 697cea97, #391 de35affa, #389 c0299e0b, #388 7cb97cf6,
+     #386 84777dff, #385 68c501a8, #368 12aef989, #370 45b2bcc4 (merged), #373 1b0f9e44, #384 b46eba0b
+git worktree add x6200-linux-dsp-integration -b feat/linux-dsp-safe-speaker-integration 681074e0 -> ok
+git status -> limpio, HEAD 681074e0
+
+## 1. Lectura previa / inventario
+# PR #394 route_arbiter_model y harness 156 checks: base de contrato (no se copia a produccion sin reconciliar)
+# #364 router (PR #384, commit ef0d2da2, default OFF), #368 A' guardian (readback bloqueado), #370 R' R_INCONCLUSIVE
+grep -rn '/dev/i2c-0' src/ refs/X6200Control/src -> solo radio.c (BASE_I2C_DEV) y libaether low/control.c open()
+rootfs/usr/sbin/x6200_daemon -> while GUI; backoff 2/5/15/60; NO lanza arbitro; NO watchdog
+src/audio.c -> capture_deliver (recorder/decoders, no speaker); audio_play_en usa HMic/IMic=0
+refs/X6200Control/src/control.c -> record_set RMW sombra; cmd/get; idle reescribe 218 B
+
+## 2. Implementacion integrada (branch-local, DEFAULT OFF)
+# src/linux_dsp_route/: route_common.h, route_shadow.[ch], route_arbiter.[ch], route_ipc.[ch],
+#                        route_supervisor.[ch], route_daemon_main.c, CMakeLists.txt
+# CMakeLists.txt: option X6200_LINUX_DSP_ROUTE OFF + add_subdirectory condicional
+# tests/linux-dsp-integration/test_integration.c + run_tests.sh
+
+## 3. Tests/build reales
+gcc -std=c11 -O2 -Wall -Wextra -Werror -Isrc/linux_dsp_route src/... tests/... -o /tmp/qa/test_integration
+  -> compila sin warnings
+tests/linux-dsp-integration/run_tests.sh
+  -> 208 comprobaciones, 0 fallos
+  -> ARM: route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
+  -> qemu-arm-static -L sysroot route_arbiter.arm --self-check -> "0 fails, writes=3" -> QEMU_SELF_CHECK=PASS
+
+## 4. Validacion (commit documental)
+git diff --check -> pendiente de registrar abajo
+check-matrix / risk -> abajo
