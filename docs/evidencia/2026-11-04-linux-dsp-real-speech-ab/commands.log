@@ -1,0 +1,10 @@
+# Comandos reales (offline)
+- corpus CMU ARCTIC 4 speakers × 2 frases -> corpus.sha256 (8 WAV; no versionados)
+- prepare.py -> out/clean + 15 degradaciones × 8 (120 WAV) + manifest; seed 20261104
+- ARM build: arm-buildroot-gcc audio_enhancement.c + audio_enh_stubs.c + dsp_run.c -lspeexdsp -lliquid -> OK
+- qemu-arm-static dsp_run por cada WAV y modo B/C/D1/D2 -> 480 procesados
+- analyze.py -> per_sample.csv/summary.csv; STOI=BLOCKED (pystoi/scipy ausentes, pip ro)
+- make_blind.py -> 72 samples/288 segmentos; max ΔRMS 0.0002 dB; answer key + template
+- run_all.sh dos veces -> 600 WAV determinismo OK (hashes idénticos)
+- tests/native/run_native_tests.sh -> 174 comprobaciones, 0 fallos
+- no radio/I2C/MUX/QA activa/TX/firmware/deploy

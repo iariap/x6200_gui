@@ -1,0 +1,15 @@
+files 128 out /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/tools/linux-dsp-real-speech-ab/out
+In file included from /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/src/params/params.h:20,
+                 from /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/src/audio_enhancement.c:15:
+/home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/src/params/params.h:20,
+                 from /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/tests/native/audio_enh_stubs.c:21:
+/home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+rows 480 stoi BLOCKED -> /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/tools/linux-dsp-real-speech-ab/out/metrics/per_sample.csv
+blind samples 72 segments 288 -> /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/tools/linux-dsp-real-speech-ab/out/blind
+PASS pipeline
+salida: /home/pablo/desa/x6200/x6200-linux-dsp-real-speech-ab/tools/linux-dsp-real-speech-ab/out
