@@ -1,0 +1,7 @@
+# Comandos reales (offline)
+- worktree feat/linux-dsp-rx-audio-quality desde 681074e0
+- tests/native/run_native_tests.sh -> 174 comprobaciones, 0 fallos (host, DSP con stub Speex; regresión de cadena)
+- build ARM real: arm-buildroot-gcc audio_enhancement.c + audio_enh_stubs.c + voice_quality_bench.c -lspeexdsp -lliquid -> OK
+- qemu-arm-static -L sysroot bench -> 45 filas JSON; integrity partition_mismatch_samples=0; sha256 fixtures
+- python summary -> C/D similares; no candidato justificado; sin cambio de DSP
+- no radio/I2C/MUX/QA activation; no deploy
