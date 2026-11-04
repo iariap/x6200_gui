@@ -1,0 +1,7 @@
+# QA-LINUX-DSP-RECOVERY-HARDEN — comandos reales
+- base verify: fork/main=681074e0; PR #395 head=ddec3f96; worktree nuevo branch feat/linux-dsp-recovery-hardening
+- incorporación: git diff 681074e0 ddec3f96 | git apply -> commit 8ada0ec1 (baseline #395)
+- hardening: arbiter unavailable/shutdown_safe/physical_confirmed=false; supervisor lost/blocked; idle refresh status/coalescing; service SIGTERM/supervisor probe; daemon readiness
+- tests/linux-dsp-integration/run_tests.sh -> 717 comprobaciones, 0 fallos; FEATURE_ON_BUILD=RUN_OK; QEMU_SELF_CHECK=PASS
+- git diff --check -> OK
+- build feature ON/OFF reproducible: ver #395 tooling (misma base); tests ARM/QEMU PASS; sin hardware

@@ -51,6 +51,17 @@ bool route_arbiter_refresh_available(const route_arbiter_t *a);
 /* Tick del arbitro: detecta lease vencido/guia caida y restaura BASE sin GUI. */
 route_event_t route_arbiter_tick(route_arbiter_t *a, uint64_t now_ms);
 
+/* Hardening recovery: disponibilidad explícita y estado físico NO observable
+ * (sin readback MCU: nunca se declara BASE físico confirmado desde mocks). */
+void route_arbiter_mark_unavailable(route_arbiter_t *a);
+void route_arbiter_mark_available(route_arbiter_t *a);   /* NO auto HABILITA: sólo disponibilidad */
+bool route_arbiter_available(const route_arbiter_t *a);
+bool route_arbiter_physical_confirmed(const route_arbiter_t *a);  /* siempre false sin readback */
+/* Shutdown seguro: si disponible y sombra válida escribe BASE una vez, invalida sombra
+ * (estado físico no confirmado) y queda DEGRADED_BASE; nunca habilita. */
+route_err_t route_arbiter_shutdown_safe(route_arbiter_t *a, uint64_t now_ms);
+bool route_arbiter_shutdown_done(const route_arbiter_t *a);
+
 route_state_t route_arbiter_state(const route_arbiter_t *a);
 bool route_arbiter_enabled(const route_arbiter_t *a);
 const route_shadow_t *route_arbiter_shadow(const route_arbiter_t *a);

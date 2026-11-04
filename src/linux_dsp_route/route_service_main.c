@@ -14,8 +14,14 @@
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
 #include "route_arbiter.h"
 #include "route_ipc.h"
+#include "route_supervisor.h"
+
+static volatile sig_atomic_t g_stop;
+static route_arbiter_t *g_arb;
+static void on_stop(int sig) { (void)sig; g_stop = 1; }
 
 #ifdef X6200_LINUX_DSP_ROUTE
 int route_transport_x6200_write_reg12(void *ctx, uint32_t value);
@@ -83,20 +89,45 @@ int main(int argc, char **argv) {
         static const uint8_t token[ROUTE_IPC_TOKEN_LEN] = {'R','X','D','P','-','A','R','B','-','T','O','K','E','N','0','1'};
         route_ipc_server_t *srv = route_ipc_server_create(a, token);
         route_ipc_server_attach(srv, cfd);
-        while (route_ipc_server_serve(srv, 10) >= 0) {
+        g_arb = a;
+        struct sigaction sa; memset(&sa, 0, sizeof(sa)); sa.sa_handler = on_stop;
+        sigaction(SIGTERM, &sa, NULL); sigaction(SIGINT, &sa, NULL);
+        while (!g_stop && route_ipc_server_serve(srv, 10) >= 0) {
             (void)route_arbiter_tick(a, mono_ms());
         }
+        /* Shutdown seguro: BASE si es posible; estado físico NO confirmado. */
+        (void)route_arbiter_shutdown_safe(a, mono_ms());
+        fprintf(stderr, "x6200_route_service: shutdown_safe physical_confirmed=%d\n",
+                (int)route_arbiter_physical_confirmed(a));
         route_ipc_server_destroy(srv);
         route_arbiter_destroy(a);
         unlink(path);
         return 0;
     }
     if (strcmp(mode, "--supervisor") == 0) {
-        /* Supervisor independiente: monitoriza que el árbitro responda. NO escribe
-         * reg12 (lo prohíbe el contrato); si el árbitro no responde => FAULT/salir. */
-        fprintf(stderr, "x6200_route_service supervisor: monitoring %s (no reg12 writes)\n", path);
-        for (unsigned i = 0; i < 1000; i++) { usleep(50000); }
-        return 0;
+        /* Supervisor independiente: monitoriza que el árbitro responda por IPC.
+         * NO escribe reg12; si no responde => BLOCKED_PHYSICAL_RECOVERY y salir !=0. */
+        int fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+        if (fd < 0) return 2;
+        struct sockaddr_un sa; memset(&sa, 0, sizeof(sa)); sa.sun_family = AF_UNIX;
+        strncpy(sa.sun_path, path, sizeof(sa.sun_path) - 1);
+        if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0) {
+            fprintf(stderr, "x6200_route_service: SUPERVISOR_ARBITER_UNAVAILABLE (%s)\n", path);
+            close(fd); return 3;
+        }
+        static const uint8_t stoken[ROUTE_IPC_TOKEN_LEN] = {'R','X','D','P','-','A','R','B','-','T','O','K','E','N','0','1'};
+        route_ipc_client_t cli; route_ipc_client_attach(&cli, fd, stoken);
+        route_supervisor_t sup; route_supervisor_init(&sup, ROUTE_LEASE_MS, ROUTE_RESTORE_BUDGET_MS);
+        for (unsigned i = 0; i < 1000; i++) {
+            route_ipc_msg_t r;
+            if (route_ipc_client_request(&cli, ROUTE_IPC_REQ_STATUS, 0, 0, mono_ms(), &r, 50) != 0) {
+                route_supervisor_arbiter_lost(&sup);
+                fprintf(stderr, "x6200_route_service: SUPERVISOR_ARBITER_UNAVAILABLE; BLOCKED_PHYSICAL_RECOVERY=1 (no reg12 write)\n");
+                close(fd); return 3;
+            }
+            usleep(50000);
+        }
+        close(fd); return 0;
     }
     fprintf(stderr, "unknown mode %s\n", mode);
     return 2;

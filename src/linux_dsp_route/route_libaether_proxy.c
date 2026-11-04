@@ -20,10 +20,14 @@
 
 static route_proxy_t *g_proxy;
 static route_err_t g_last_err = ROUTE_ERR_OK;
+static route_lib_proxy_refresh_status_t g_refresh_status;
 
 void route_libaether_proxy_set(route_proxy_t *proxy) { g_proxy = proxy; }
 route_proxy_t *route_libaether_proxy_get(void) { return g_proxy; }
 route_err_t route_libaether_proxy_last_error(void) { return g_last_err; }
+void route_libaether_proxy_refresh_status(route_lib_proxy_refresh_status_t *out) {
+    if (out != NULL) *out = g_refresh_status;
+}
 static bool active(void) { return g_proxy != NULL && route_proxy_is_enabled(g_proxy); }
 static void note(route_err_t e) { if (e != ROUTE_ERR_OK) g_last_err = e; }
 /* Con el parche X6200Control, mantener la sombra de libaether coherente con las
@@ -151,6 +155,9 @@ void x6200_control_idle(void) {
 #ifdef X6200_CTRL_HAVE_BULK_WRITE
     /* Sombra autoritativa: libaether recibe sync_shadow12() tras cada escritura
      * proxied; el bloque se envía por el árbitro (bulk 218 B). */
+    if (g_refresh_status.pending) g_refresh_status.coalesced++;
+    g_refresh_status.pending = true;
+    g_refresh_status.attempts++;
     typedef uint32_t (*real_get_t)(int cmd);
     real_get_t get = (real_get_t)dlsym(RTLD_DEFAULT, "x6200_control_get");
     if (get != NULL) {
@@ -160,12 +167,18 @@ void x6200_control_idle(void) {
         snap.valid = true;
         route_err_t e = route_proxy_refresh_block(g_proxy, snap.regs);
         note(e);
+        if (e == ROUTE_ERR_OK) { g_refresh_status.blocked = 0; g_refresh_status.pending = false; }
+        else { g_refresh_status.failures++; g_refresh_status.blocked++; g_refresh_status.last_error = e; g_refresh_status.pending = true; }
         return;
     }
     g_last_err = ROUTE_ERR_UNSUPPORTED;
+    g_refresh_status.attempts++; g_refresh_status.failures++; g_refresh_status.blocked++;
+    g_refresh_status.last_error = ROUTE_ERR_UNSUPPORTED; g_refresh_status.pending = true;
 #else
     /* Sin API bulk parcheada: no se reescribe directo ni se hacen 54 writes. */
     g_last_err = ROUTE_ERR_UNSUPPORTED;
+    g_refresh_status.attempts++; g_refresh_status.failures++; g_refresh_status.blocked++;
+    g_refresh_status.last_error = ROUTE_ERR_UNSUPPORTED; g_refresh_status.pending = true;
 #endif
 }
 #endif

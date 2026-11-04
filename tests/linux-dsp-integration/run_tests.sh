@@ -33,6 +33,9 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$SRC/route_libaether_proxy.c" \
     "$HERE/test_patched.c" -o "$OUT/test_patched" -lpthread
 "$OUT/test_patched"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$HERE/test_hardening.c" -o "$OUT/test_hardening" -lpthread
+"$OUT/test_hardening"
 "$OUT/test_snapshot"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
@@ -42,6 +45,9 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$SRC/route_libaether_proxy.c" \
     "$HERE/test_patched.c" -o "$OUT/test_patched" -lpthread
 "$OUT/test_patched"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$HERE/test_hardening.c" -o "$OUT/test_hardening" -lpthread
+"$OUT/test_hardening"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \

@@ -8,6 +8,7 @@ struct route_arbiter {
     route_shadow_t shadow;
     route_state_t state;
     bool initialized, enabled, gui_alive, gui_write_ok, generated, sink_ok, capture_ok;
+    bool available, physical_confirmed, shutdown_done;
     bool pcm_ok;
     uint32_t hb_value;
     uint64_t hb_ms;
@@ -35,6 +36,7 @@ route_arbiter_t *route_arbiter_create(const route_bus_t *bus, uint64_t now_ms) {
     a->state = ROUTE_STATE_BASE;
     a->enabled = false; a->gui_alive = false; a->gui_write_ok = false;
     a->generated = false; a->sink_ok = true; a->capture_ok = true; a->pcm_ok = false;
+    a->available = true; a->physical_confirmed = false; a->shutdown_done = false;
     route_shadow_init(&a->shadow, 0);
     a->last_err = ROUTE_ERR_OK;
     return a;
@@ -43,7 +45,9 @@ void route_arbiter_destroy(route_arbiter_t *a) { free(a); }
 
 route_err_t route_arbiter_boot(route_arbiter_t *a) {
     if (a == NULL) return ROUTE_ERR_INVALID;
-    a->enabled = false; a->state = ROUTE_STATE_BASE;
+    a->enabled = false;
+    if (!a->available) { a->state = ROUTE_STATE_FAULT; a->stats.fault_count++; a->last_err = ROUTE_ERR_UNKNOWN_STATE; return ROUTE_ERR_UNKNOWN_STATE; }
+    a->state = ROUTE_STATE_BASE;
     route_shadow_invalidate(&a->shadow);
     if (bus_write(a, 0u) != 0) {
         a->state = ROUTE_STATE_FAULT; a->stats.fault_count++;
@@ -103,6 +107,10 @@ route_err_t route_arbiter_apply_shared(route_arbiter_t *a, uint64_t now_ms, uint
 
 route_err_t route_arbiter_set_enabled(route_arbiter_t *a, uint64_t now_ms, bool enabled) {
     if (a == NULL || !a->initialized) { return ROUTE_ERR_NOT_READY; }
+    if (!a->available) {
+        /* no auto recovery tras failover/restart */
+        a->stats.denied++; a->last_err = ROUTE_ERR_UNKNOWN_STATE; return ROUTE_ERR_UNKNOWN_STATE;
+    }
     if (!enabled) {
         route_err_t e = disable_rx(a, now_ms, "disable");
         if (e == ROUTE_ERR_OK) { a->enabled = false; a->state = ROUTE_STATE_BASE; }
@@ -171,8 +179,44 @@ route_err_t route_arbiter_pcm_missing(route_arbiter_t *a, uint64_t now_ms) {
     return ROUTE_ERR_OK;
 }
 
+void route_arbiter_mark_unavailable(route_arbiter_t *a) {
+    if (a == NULL) return;
+    /* El árbitro ya no es confiable: NO se escribe reg12 (evita segundo writer ciego),
+     * se invalida la sombra y se prohíbe RX_LINUX. Recuperación física queda NO observada. */
+    a->enabled = false; a->available = false; a->state = ROUTE_STATE_FAULT;
+    a->physical_confirmed = false; route_shadow_invalidate(&a->shadow);
+    a->stats.fault_count++; a->last_err = ROUTE_ERR_UNKNOWN_STATE;
+}
+void route_arbiter_mark_available(route_arbiter_t *a) {
+    if (a == NULL) return;
+    a->available = true;   /* sólo disponibilidad; no cambia estado ni habilita */
+}
+bool route_arbiter_available(const route_arbiter_t *a) { return a != NULL && a->available; }
+bool route_arbiter_physical_confirmed(const route_arbiter_t *a) { (void)a; return false; }
+bool route_arbiter_shutdown_done(const route_arbiter_t *a) { return a != NULL && a->shutdown_done; }
+route_err_t route_arbiter_shutdown_safe(route_arbiter_t *a, uint64_t now_ms) {
+    if (a == NULL) return ROUTE_ERR_INVALID;
+    a->enabled = false;
+    if (a->available && route_shadow_valid(&a->shadow)) {
+        uint32_t base = a->shadow.value & ~ROUTE_REG_VOICE_REC;
+        if (bus_write(a, base) != 0) {
+            a->state = ROUTE_STATE_FAULT; a->stats.fault_count++; a->last_err = ROUTE_ERR_BUS;
+            a->available = false; a->physical_confirmed = false; a->shutdown_done = true;
+            return ROUTE_ERR_BUS;
+        }
+        a->state = ROUTE_STATE_DEGRADED_BASE; a->stats.restores++; a->stats.last_restore_ms = now_ms;
+    } else {
+        a->state = ROUTE_STATE_FAULT;
+    }
+    a->shutdown_done = true;
+    /* Aunque se haya escrito BASE, no hay readback: estado físico NO confirmado y la
+     * sombra se invalida para que un restart no reutilice estados viejos. */
+    a->physical_confirmed = false; route_shadow_invalidate(&a->shadow);
+    return ROUTE_ERR_OK;
+}
 route_event_t route_arbiter_tick(route_arbiter_t *a, uint64_t now_ms) {
     if (a == NULL) return ROUTE_EV_FAULT;
+    if (!a->available) { a->state = ROUTE_STATE_FAULT; return ROUTE_EV_FAULT; }
     if (a->state == ROUTE_STATE_RX_LINUX || a->state == ROUTE_STATE_READY) {
         if (!a->gui_alive || !hb_fresh(a, now_ms)) {
             route_err_t e = disable_rx(a, now_ms, "lease");
@@ -184,11 +228,12 @@ route_event_t route_arbiter_tick(route_arbiter_t *a, uint64_t now_ms) {
 }
 
 bool route_arbiter_refresh_available(const route_arbiter_t *a) {
-    return a != NULL && a->bus.write_block != NULL;
+    return a != NULL && a->available && a->bus.write_block != NULL;
 }
 route_err_t route_arbiter_refresh(route_arbiter_t *a, const uint32_t block[ROUTE_SNAPSHOT_REGS],
                                   uint64_t now_ms) {
     if (a == NULL || block == NULL) return ROUTE_ERR_INVALID;
+    if (!a->available) return ROUTE_ERR_UNKNOWN_STATE;
     if (!a->initialized || a->state == ROUTE_STATE_FAULT) return ROUTE_ERR_UNKNOWN_STATE;
     if (!route_shadow_valid(&a->shadow)) return ROUTE_ERR_UNKNOWN_STATE;
     if (!hb_fresh(a, now_ms)) return ROUTE_ERR_NOT_READY;
