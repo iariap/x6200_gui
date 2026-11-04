@@ -132,8 +132,8 @@ bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg) {
 }
 void x6200_control_idle(void) {
     if (!active()) { ORIG_IDLE_VOID(); return; }
-    /* QA-only: idle NO reescribe directo (evita escritor paralelo). El refresco
-     * periódico queda deshabilitado mientras el proxy está activo; se documenta. */
-    g_last_err = ROUTE_ERR_OWNERSHIP;
+    /* Refresco periódico DESHABILITADO: sin bloque autoritativo de 54 regs no se
+     * puede refrescar de forma segura (ver idle-refresh-analysis.md). No escribe. */
+    g_last_err = ROUTE_ERR_UNSUPPORTED;
 }
 #endif

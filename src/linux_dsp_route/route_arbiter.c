@@ -200,6 +200,7 @@ const char *route_arbiter_last_error_name(const route_arbiter_t *a) {
         case ROUTE_ERR_STALE: return "STALE";
         case ROUTE_ERR_TX_ACTIVE: return "TX_ACTIVE";
         case ROUTE_ERR_OWNERSHIP: return "OWNERSHIP";
+        case ROUTE_ERR_UNSUPPORTED: return "UNSUPPORTED";
     }
     snprintf(buf, sizeof(buf), "ERR%d", (int)a->last_err);
     return buf;
@@ -221,6 +222,7 @@ const char *route_err_name(route_err_t e) {
         case ROUTE_ERR_BUS: return "BUS"; case ROUTE_ERR_TIMEOUT: return "TIMEOUT";
         case ROUTE_ERR_STALE: return "STALE"; case ROUTE_ERR_TX_ACTIVE: return "TX_ACTIVE";
         case ROUTE_ERR_OWNERSHIP: return "OWNERSHIP";
+        case ROUTE_ERR_UNSUPPORTED: return "UNSUPPORTED";
     }
     return "?";
 }

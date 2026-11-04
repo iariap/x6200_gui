@@ -131,3 +131,17 @@ git diff --check -> exit 0
 tests -> 377 comprobaciones, 0 fallos; FEATURE_ON_BUILD=RUN_OK; ARM wrapper object; QEMU=PASS
 check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
 ```
+
+## 11. Idle/build stage (task-26)
+
+```
+# analisis idle: all_cmd=2+4*54=218B; REFRASH_TIMEOUT 1000ms; radio_thread -> idle bajo lock
+# route_libaether_proxy: idle con proxy activo NO escribe; ROUTE_ERR_UNSUPPORTED (refresco bloqueado,
+#   falta snapshot autoritativo de all_cmd/readback); tests 53 checks (callsites)
+git submodule update --init lvgl -> OK (74d0a816...)
+PKG_CONFIG_PATH=ROM-sysroot pkgconfig cmake -S . -B .qa-build/cmake-on -DX6200_LINUX_DSP_ROUTE=ON
+  -> CONFIGURE+GEN OK (speexdsp 1.2.1, pulse, alsa, drm... encontrados)
+cmake --build cmake-on --target x6200_route_service -> FAIL: flags ARM (-mfpu=neon-vfpv4) con cc host
+cmake con CMAKE_C_COMPILER=arm-buildroot-gcc -> configure FAIL (falta toolchain file/entorno Buildroot)
+=> build GUI/service feature ON: SKIP de entorno, no PASS; capacidad/path exactos en tests-build-results.md
+```

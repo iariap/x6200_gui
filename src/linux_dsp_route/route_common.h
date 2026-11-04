@@ -57,6 +57,7 @@ typedef enum {
     ROUTE_ERR_STALE = -6,
     ROUTE_ERR_TX_ACTIVE = -7,
     ROUTE_ERR_OWNERSHIP = -8,
+    ROUTE_ERR_UNSUPPORTED = -9,
 } route_err_t;
 
 /* Backend de bus: SOLO el arbitro escribe. write_reg12 devuelve 0/errno.

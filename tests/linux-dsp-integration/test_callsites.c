@@ -88,6 +88,7 @@ static void test_active_route_calls(void) {
     CHECK(x6200_control_cmd((x6200_cmd_enum_t)5, 1) == true); CHECK(orig_cmd == 1);
     /* idle: no directo */
     int b = fcount(&e.f); x6200_control_idle(); CHECK(orig_idle == 0); CHECK(fcount(&e.f) == b);
+    CHECK(route_libaether_proxy_last_error() == ROUTE_ERR_UNSUPPORTED);
     down(&e);
 }
 static void test_concurrency_and_timeout(void) {

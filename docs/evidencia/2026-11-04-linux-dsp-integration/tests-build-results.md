@@ -9,10 +9,10 @@ tests/linux-dsp-integration/run_tests.sh
 -> 88 comprobaciones, 0 fallos    (proxy GUI/libaether: RMW serializado, voice_rec rechazado,
                                    PTT/ATU/split, TX disable-first ordenado, bus-fail cache inválida,
                                    timeout sin caché falsa, 40 escrituras serializadas)
--> 52 comprobaciones, 0 fallos    (call-sites interpuestos: delegación OFF, reg12 sólo proxy,
-                                   record OWNERSHIP, host_cmd ATU directo, idle suprimido,
-                                   20 PTT concurrentes, timeout sin original)
-   total 377 comprobaciones, 0 fallos
+-> 53 comprobaciones, 0 fallos    (call-sites interpuestos: delegación OFF, reg12 sólo proxy,
+                                   record OWNERSHIP, host_cmd ATU directo, idle suprimido +
+                                   ROUTE_ERR_UNSUPPORTED, 20 PTT concurrentes, timeout sin original)
+   total 378 comprobaciones, 0 fallos
 ```
 Cubre (208): boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
 TX/ATU disable-first y bus-fail, ownership/token/PID/STALE, apply_shared sin voice_rec, lease restore
@@ -52,9 +52,14 @@ toolchain ARM directamente, que es la evidencia usada.
 
 - Módulos feature ON compilados/ejecutados en host con stubs del SDK (`tests/linux-dsp-integration/stubs/`):
   `X6200_LINUX_DSP_ROUTE=1`, servicio `--self-check` OK; adaptador de transporte compilado ARM feature ON.
-- **Build GUI completa feature ON NO posible en este entorno**: `cmake -DX6200_LINUX_DSP_ROUTE=ON`
-  falla en configure por dependencias pkg-config ausentes (p.ej. `speexdsp`; mismo faltante de
-  sysroot/buildroot/lvgl del entorno). Se registra SKIP/entorno, no PASS. No es un error del código.
+- **Feature ON configure completo**: con lvgl submodule inicializado (`git submodule update --init lvgl`,
+  OK) y `PKG_CONFIG_PATH`/`PKG_CONFIG_SYSROOT_DIR` del sysroot ROM (busca `speexdsp 1.2.1`, libpulse,
+  ALSA, libdrm, etc.) **`cmake -DX6200_LINUX_DSP_ROUTE=ON` COMPLETA** (configure+generate OK).
+- **Compilar la GUI/servicio feature ON no completado**: el árbol aplica flags ARM (`-mfpu=neon-vfpv4`)
+  con el `cc` host, y el cross-configure directo (`CMAKE_C_COMPILER=arm-buildroot-...-gcc`) falla antes
+  de generar (falta el entorno/toolchain file de Buildroot). **SKIP de entorno, no PASS**: capacidad
+  faltante = toolchain file/sysroot de Buildroot completo y deps host; no es error de los módulos
+  (que compilan host con stubs y ARM con el toolchain ROM individualmente).
 
 ## Feature OFF / build normal
 
