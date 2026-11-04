@@ -307,3 +307,11 @@ H1 **no** recuperó RX de captura: QA32 B=143,0 vs A=2160,7. `BASE_RX_PRESERVED_
 también con H1. H1_DAC_ROUTE_DISABLED=LIKELY no confirmado. No hay modo combinado demostrado.
 Rollback oficial 1.0.8 preparado en `rollback-plan.md`, **no ejecutado**; requiere autorización
 específica para SHA `9a19f97a…`. Sin más pruebas de audio ni flasheos.
+
+
+## 32. Rollback oficial ejecutado
+
+Autorización del propietario; overlay sólo oficial; IAP/XMODEM 512 paquetes, 100%,
+`UiFwUpgrade finished 0`; reinicio; BASE 1.0.8; GUI original; ALSA diff vacío; ajustes
+27.565 MHz AM/vol25 preservados. H1 ya no está instalado. Ver `rollback-result.md`.
+Sin más flasheos.
