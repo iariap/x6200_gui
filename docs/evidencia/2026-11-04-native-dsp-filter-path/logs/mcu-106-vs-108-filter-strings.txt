@@ -1,0 +1,14 @@
+# MCU 1.0.6 vs 1.0.8 - cadenas update/[INFO]/[ERR] (conteos y diferencias)
+108: 172 cadenas; 106: 189 cadenas
+handler strings presentes en AMBAS: update rx filter, update notch filter, update dnr threshold/type, update nb enable/threshold, update rxeq_en/p1..p5, update rxeqwfm_*, update miceq_*, update actual agc mode, [INFO] AGC params
+solo 108:
+  [ERR] write max172xx reg[0x05]/[0x1D]
+  [INFO] BandMap %d, Settings %d, Calibrations %d, ReportPackage %d
+solo 106 (boot/updater/NVPARAM; no filtros):
+  [ERR] Fatal error, erase flash failed!
+  [ERR] Init IWDG1
+  [ERR] Read NVPARAM
+  [ERR] Wrong NVPARAM...
+  [ERR] XMODEM transfer
+  [ERR] can't write i2c1/i2c4 ...
+conclusión: la superficie de control de filtros/DSP es idéntica entre 1.0.6 y 1.0.8; los cambios de 1.0.8 son de arranque/updater/NVPARAM/FPGA/MCU regs..
