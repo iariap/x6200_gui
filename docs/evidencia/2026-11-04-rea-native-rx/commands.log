@@ -1,0 +1,80 @@
+# Commands log — #390 (offline) — 2026-11-04 UTC
+
+Todo el trabajo fue offline: no se conectó la radio, no se flasheó, no se escribió registro/GPIO/MUX/
+ALSA/GUI/ajustes. No se publican binarios vendor, claves ni datos privados.
+
+## 0. Base y aislamiento
+
+```
+gh issue view 390 --repo iariap/x6200_gui --json title,body,url          -> exit 0 (leído completo)
+git -C x6200_gui remote -v                                             -> fork=iariap (https), origin=gdyuldin (ssh)
+git -C x6200_gui fetch fork                                            -> exit 0
+git -C x6200_gui ls-remote fork | head -1                              -> 681074e0… HEAD (target main real)
+git -C x6200_gui rev-parse origin/main                                 -> e1476ece… (upstream distinto, no usado)
+git -C x6200_gui rev-parse main                                        -> 6a29687d (local añejo; no se tocó)
+git -C x6200_gui rev-parse fork/main                                   -> 681074e0adac5a79f0392b4e51284167abf5e342
+git -C x6200_gui worktree add x6200-rea-native-rx -b research/x6200-rea-native-rx 681074e0   -> exit 0
+git -C x6200-rea-native-rx status --short --branch                     -> limpio, HEAD 681074e0 (verificado)
+```
+
+## 1. Inventario de firmware de fábrica (hashes reales)
+
+```
+sha256sum fw108-scratch/ext108/parts/1.img fw108-scratch/fw108-image-377/{sdcard.img,rootfs.tar,boot.vfat} \
+          fw108-scratch/ext108/fs108/{x6200_ui_v100,x6200_mcu_20260820141208.xgf} \
+          fw108-scratch/x6200-base-rea/{x6200-108.dec.bin,x6200-106.dec.bin} \
+          fw108-scratch/ref106/fs106/x6200_mcu_20250111134652.xgf refs/vendor-fw/x6200_ui_v100
+  -> exit 0; resultados en logs/inventory-sha256.txt y firmware-inventory.csv
+tar -tf fw108-scratch/fw108-image-377/rootfs.tar | grep -iE 'fpga|\.rbf|bitstream|mcu|xgf'  -> sin bitstream
+debugfs -R 'ls -l /usr/firmware' fw108-scratch/ext108/parts/1.img       -> x6200_mcu_20260820141208.xgf
+strings -a fw108-scratch/ext108/parts/1.img | grep -iE 'bitstream|fpga|cyclone|\.rbf'       -> genéricos Linux, sin bitstream vendor
+strings -a fw108-scratch/x6200-base-rea/x6200-108.dec.bin | grep -iE 'fpga|codec|audio processor'
+  -> "Init FPGA", "FPGA FW Version", "FPGA Flash verification failed", "Init audio codec/processor"
+```
+
+## 2. REA (obligatorio) — ejecutado
+
+```
+node refs/rea/scripts/rea.mjs capabilities                              -> exit 0 (logs/rea-capabilities.txt)
+node refs/rea/scripts/rea.mjs analyze x6200-108.dec.bin --target-format raw-binary --architecture arm \
+     --entry-point 0x08020000 --provider ghidra --format json            -> exit 0 ev_0c40ee44… (logs/rea-analyze-108.json)
+node refs/rea/scripts/rea.mjs inspect-native-load-image x6200-108.dec.bin ... --json -> exit 0 ev_7d4f61b0…
+node refs/rea/scripts/rea.mjs analyze x6200_ui_v100 --provider ghidra --format json -> exit 0 ev_ed994bd9…
+node refs/rea/scripts/rea.mjs decompile x6200_ui_v100 0xd9d40 --provider ghidra --format json -> exit 0 ev_62577474…
+node refs/rea/scripts/rea.mjs decompile x6200-108.dec.bin --file-offset 0x4881 ... -> exit 1
+  (bridge: bloque "ram" sin procedimientos; documentado en rea-ghidra-log.md; se usó Ghidra headless como apoyo)
+```
+
+## 3. Ghidra headless (12.1.4 real; 12.2 de /tmp no existe en este sandbox)
+
+```
+export HOME=.qa390/home JAVA_HOME=tools/jdk/jdk-21.0.13+9 \
+       JAVA_TOOL_OPTIONS=-Duser.home=.qa390/home GHIDRA_INSTALL_DIR=tools/ghidra/ghidra_12.1.4_PUBLIC
+analyzeHeadless qa390-ghidra X6200 -import x6200-108.dec.bin -processor ARM:LE:32:Cortex \
+  -loader BinaryLoader -loader-baseAddr 0x08020000 -preScript AddMemory.java \
+  -postScript QA390Dump.java -analysisTimeoutPerFile 2400                          -> GHIDRA_RC=0
+analyzeHeadless qa390-ghidra X6200 -process x6200-108.dec.bin -noanalysis -postScript QA390Scan.java -> RC=0
+analyzeHeadless ... QA390Lit.java     -> RC=0 (xrefs a literales DAC/buffers)
+analyzeHeadless ... QA390Dac.java     -> RC=0 (DAC MSP init/deinit, wrappers FPGA, callers)
+analyzeHeadless ... QA390Handle.java  -> RC=0 (referencias al handle DAC 0x2400584c)
+```
+
+## 4. Decodificación/verificación de hechos
+
+```
+python3 -  # palabras LE en 0x08021080..0x08021150 y ocurrencias de literales
+  -> 0x40007400 aparece 3 veces (0x08021090/0x0802110C/0x08021138)
+  -> 0x30000C00 aparece en 0x08031954/0x080321F8/0x08032518/0x080354B8/0x08035C88/0x08035D10
+  -> RCC 0x58024400, GPIO 0x58020000; handle DAC 0x2400584C
+grep del pseudocódigo (logs/qa390-scan.txt / qa390-lit.txt / qa390-dac.txt):
+  - FUN_08045320 (voice_rec BASE/DAC) y FUN_080450C8 (switch 0..5)
+  - FUN_0803195c (RX I/Q→float→DSP) y FUN_08031734 (PCM→0x30000C00, DCCMVAC)
+  - FUN_08035b40 (DMA I2S3 RX/TX: 0x30000000/0x30000C00)
+  - FUN_08021118 (DAC deinit) llamado por FUN_08022588 (apagado global)
+```
+
+## 5. Validación del PR (docs + tools)
+
+```
+[pendiente: check-matrix / risk / git diff --check sobre el commit documental]
+```
