@@ -10,3 +10,5 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 - `qa39-i2s3-pipeline.md`: QA39 — DMA RX/TX confirmado; RX=0x30000000, TX=0x30000C00; formato/tasa UNKNOWN.
 
 - `qa40-dma-sizes-processing.md`: QA40 — DMA 32/16 bits, longitudes en unidades; consumidor/productor no encontrados.
+
+- `qa41-dma-callbacks.md`: QA41 — DMA config/callbacks; sin consumidor/productor ni procesamiento RX→TX.
