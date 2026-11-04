@@ -33,5 +33,5 @@ tests `tools/rx-speaker-quality/tests/test_audio_ab.py` → **5 tests OK** (`log
 
 - Inteligibilidad con habla real: **SKIPPED** (no hay voz con licencia/consentimiento).
 - CPU/RAM/latencia en la radio (R16), XRUN en hardware: **BLOCKED**.
-- Audibilidad/calidad de cualquier opción nativa o Linux: **PENDING_PHYSICAL_VALIDATION** (esta tarea fue offline, sin radio, sin owner).
+- Audibilidad/calidad de cualquier opción nativa o Linux: **PENDING_PHYSICAL_VALIDATION** para la tarea offline original. **A/B físico parcial nativo ejecutado 2026-11-04**; ver `physical-ab-results.md` (AUDIBLE del operador; sin métricas objetivas).
 - Ninguna conclusión acústica se deriva de `writes/drops/underruns` ni del modelo.
