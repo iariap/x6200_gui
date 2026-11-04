@@ -118,6 +118,10 @@ int route_ipc_server_serve(route_ipc_server_t *s, int timeout_ms) {
         case ROUTE_IPC_REQ_STATUS:
             e = ROUTE_ERR_OK;
             break;
+        case ROUTE_IPC_REQ_PCM_READY:
+            e = route_arbiter_pcm_submit(s->arb, ROUTE_BLOCK_SAMPLES, ROUTE_RATE, true,
+                                         req.value ? req.value : 1, req.mono_ms);
+            break;
         case ROUTE_IPC_REQ_REFRESH: {
             uint32_t blk[ROUTE_SNAPSHOT_REGS];
             memcpy(blk, req.block, sizeof(blk));

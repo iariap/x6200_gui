@@ -1,11 +1,12 @@
 gate,status,environment,evidence,notes
 SINGLE_WRITER_CONTROL,PASS,offline,tests 717 + proxy/interposition,único writer lógico; no físico
-IDLE_REFRESH_COMPATIBILITY,PASS,offline (patched QA build),test_patched/callsites,status explícito/coalescing; sin prueba física
+IDLE_REFRESH_COMPATIBILITY,PASS,offline (patched QA build),test_patched/callsites + sha fix,status explícito/coalescing; sin prueba física
 RADIO_CONTROL_REGRESSION,PASS,offline,717 checks + audit/regression matrix,sin hardware
 TX_PTT_ATU_ISOLATION,PASS,offline,proxy/callsites/hardening,disable-first; sin TX físico
 SHADOW_COHERENCE,PASS,offline,route_shadow/hardening,invalidación/FAULT/restart
 SUPERVISOR_LIFECYCLE,PASS,offline,test_hardening + service script review,socket probe/SIGTERM; no físico
-ARBITER_FAILURE_HANDLING,PASS,offline,test_hardening,mark_unavailable/no writes; BLOCKED_PHYSICAL_RECOVERY
+ARBITER_FAILURE_HANDLING,PASS,offline,test_hardening + test_qa_enable,mark_unavailable/no writes; BLOCKED_PHYSICAL_RECOVERY
+QA_ONLY_ACTIVATION,PASS,offline,test_qa_enable (27 checks),gate+precondiciones+IPC/arbitro; sin sink GUI real
 INDEPENDENT_BASE_RESTORE,PASS,offline,test_hardening (lógica),árbitro vivo escribe BASE; físico no confirmado
 RESTORE_250MS_OFFLINE,PASS,offline,test_hardening/supervisor,contrato lógico; no físico
 MUX_PHYSICAL_STATE_VERIFICATION,BLOCKED,physical,sin readback MCU (R' #370),requiere instrumentación/autorización

@@ -15,6 +15,7 @@ typedef enum {
     ROUTE_IPC_REQ_ATU_PREPARE,
     ROUTE_IPC_REQ_STATUS,
     ROUTE_IPC_REQ_REFRESH,
+    ROUTE_IPC_REQ_PCM_READY,   /* QA: PCM post-Speex vivo (value=block_id) */
     ROUTE_IPC_REQ_SHUTDOWN,
 } route_ipc_req_t;
 

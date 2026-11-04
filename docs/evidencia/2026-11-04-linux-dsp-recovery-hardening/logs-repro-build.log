@@ -1,0 +1,14 @@
+== patch sha256 OK: 87cc9058567fbb6033fc998a8232991ba9dcdad3545e1d9b1e78cb191e3842cb
+== patch aplica 1 vez, 2da aplicación rechazada (idempotente)
+== WORK=/tmp/linux-dsp-repro
+== parche aplicado en copia temporal (refs intacto)
+== build libaether parcheada
+== configure/build feature-ON GUI+servicio (ARM)
+== feature-ON ARM OK (GUI+servicio, símbolo bulk)
+== build normal OFF (BASE: sin ruta/servicio)
+== OFF BASE OK (sin ruta/servicio/símbolos)
+== tests host/ARM/QEMU
+== tests OK (ver logs)
+== empaquetar artefactos QA (sin deploy)
+== artefactos: /tmp/linux-dsp-repro/pkg (GUI, servicio, MANIFEST, SHA256SUMS) — NO deploy
+== PASS reproducible build completo

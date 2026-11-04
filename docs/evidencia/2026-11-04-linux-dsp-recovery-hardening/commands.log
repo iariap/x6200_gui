@@ -5,3 +5,10 @@
 - tests/linux-dsp-integration/run_tests.sh -> 717 comprobaciones, 0 fallos; FEATURE_ON_BUILD=RUN_OK; QEMU_SELF_CHECK=PASS
 - git diff --check -> OK
 - build feature ON/OFF reproducible: ver #395 tooling (misma base); tests ARM/QEMU PASS; sin hardware
+
+## task-32 fixes
+- patch sha corregido: archivo .sha256 = 87cc9058... (actual); shadow_update/bulk_write presentes; patch-only OK (aplica 1 vez, 2da rechazada)
+- QA activation implementada: ROUTE_IPC_REQ_PCM_READY, wiring attach/worker/token, precondiciones, ENABLE vía árbitro
+- tests: 771 comprobaciones, 0 fallos (incluye test_qa_enable 27); FEATURE_ON=RUN_OK; QEMU=PASS
+- reproducible-build.sh (lvgl submodule inicializado) -> REPRO_RC=0 PASS; feature-ON GUI+servicio ARM OK; OFF BASE OK; paquete QA sin deploy
+- logs: logs-tests.log, logs-repro-build.log

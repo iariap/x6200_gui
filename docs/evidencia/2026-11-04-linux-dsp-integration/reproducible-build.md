@@ -41,7 +41,7 @@ Pasos del script:
 
 `tools/linux-dsp-integration/reproducible-build.sh` → **REPRO_RC=0, PASS reproducible build completo**
 (log en `logs/repro-build.log`):
-- patch sha256 `0d6dd1c73371ec6aa4d7c01f1c1ed92d32dff323de6343a717d2ae0fda876193`, idempotente;
+- patch sha256 `87cc9058567fbb6033fc998a8232991ba9dcdad3545e1d9b1e78cb191e3842cb`, idempotente;
 - libaether parcheada OK; **GUI+servicio feature-ON ARM EABI5 OK** (bulk referenciado);
 - **OFF BASE OK** (sin ruta/servicio/símbolos);
 - tests OK (614 checks, 0 fallos);

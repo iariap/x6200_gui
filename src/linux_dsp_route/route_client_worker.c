@@ -129,8 +129,14 @@ int route_worker_set_tx(route_client_worker_t *w, bool tx) {
 int route_worker_set_enabled(route_client_worker_t *w, bool enabled) {
     if (w == NULL || w->ipc == NULL) return -1;
     route_ipc_msg_t r;
-    return route_ipc_client_request(w->ipc, enabled ? ROUTE_IPC_REQ_ENABLE : ROUTE_IPC_REQ_DISABLE,
-                                    0, 0, now_ms(), &r, 100) == 0 ? 0 : -1;
+    if (route_ipc_client_request(w->ipc, enabled ? ROUTE_IPC_REQ_ENABLE : ROUTE_IPC_REQ_DISABLE,
+                                 0, 0, now_ms(), &r, 100) != 0) return -1;
+    return (int)r.err;
+}
+int route_worker_send_pcm_ready(route_client_worker_t *w, uint32_t block_id, uint64_t now_ms) {
+    if (w == NULL || w->ipc == NULL) return -1;
+    route_ipc_msg_t r;
+    return route_ipc_client_request(w->ipc, ROUTE_IPC_REQ_PCM_READY, block_id, 0, now_ms, &r, 100) == 0 ? 0 : -1;
 }
 int route_worker_pump_control(route_client_worker_t *w, int timeout_ms) {
     if (w == NULL || w->ipc == NULL) return -1;

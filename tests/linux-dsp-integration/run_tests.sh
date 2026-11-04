@@ -36,6 +36,9 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$HERE/test_hardening.c" -o "$OUT/test_hardening" -lpthread
 "$OUT/test_hardening"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$HERE/test_qa_enable.c" -o "$OUT/test_qa_enable" -lpthread
+"$OUT/test_qa_enable"
 "$OUT/test_snapshot"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
@@ -48,6 +51,9 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$HERE/test_hardening.c" -o "$OUT/test_hardening" -lpthread
 "$OUT/test_hardening"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$HERE/test_qa_enable.c" -o "$OUT/test_qa_enable" -lpthread
+"$OUT/test_qa_enable"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \

@@ -1,4 +1,4 @@
-== patch sha256 OK: 0d6dd1c73371ec6aa4d7c01f1c1ed92d32dff323de6343a717d2ae0fda876193
+== patch sha256 OK: 87cc9058567fbb6033fc998a8232991ba9dcdad3545e1d9b1e78cb191e3842cb
 == patch aplica 1 vez, 2da aplicación rechazada (idempotente)
 == WORK=/tmp/linux-dsp-repro
 == parche aplicado en copia temporal (refs intacto)

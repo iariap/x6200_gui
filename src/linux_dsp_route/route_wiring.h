@@ -20,6 +20,7 @@ typedef enum {
     ROUTE_WIRING_READY,            /* inicializado, RX_LINUX aún bloqueado */
     ROUTE_WIRING_BLOCKED,          /* habilitado QA pero proxy incompleto: bloqueado */
     ROUTE_WIRING_FAULT,
+    ROUTE_WIRING_ACTIVE,
 } route_wiring_state_t;
 
 typedef struct route_wiring route_wiring_t;
@@ -27,6 +28,11 @@ typedef struct route_wiring route_wiring_t;
 /* sink y control backend inyectados; ipc_path = socket del árbitro (NULL en host/no activado). */
 route_wiring_t *route_wiring_create(const route_sink_t *sink, const char *ipc_path,
                                     const uint8_t token[ROUTE_IPC_TOKEN_LEN]);
+/* QA: adjunta un fd IPC ya conectado (tests y hooks) y crea el worker dedicado. */
+int route_wiring_attach_ipc(route_wiring_t *w, int fd);
+/* QA: valor actual del reg12 (sin voice_rec) para no clobberar bits compartidos. */
+void route_wiring_set_current_reg(route_wiring_t *w, uint32_t value);
+bool route_wiring_has_fresh_pcm(const route_wiring_t *w);
 void route_wiring_destroy(route_wiring_t *w);
 route_wiring_state_t route_wiring_state(const route_wiring_t *w);
 bool route_wiring_enabled(const route_wiring_t *w);
