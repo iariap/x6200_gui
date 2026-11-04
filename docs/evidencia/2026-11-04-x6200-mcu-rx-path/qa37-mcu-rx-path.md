@@ -1,5 +1,13 @@
 # QA37 — Mapa del camino RX en el MCU BASE 1.0.8
 
+
+> **Corrección QA38:** `0x30000000` es SRAM1 interna, no FPGA/memoria externa; el H725 tiene
+> SAI1 y SAI4 (no SAI2/SAI3); `0x24005DC4/0x24005D4C` son handles DMA, no buffers de datos.
+> **SPI3 está configurado como I2S3** y la transferencia usa DMA + buffers candidatos en
+> `0x30000000/0x30000C00`. La clasificación `MCU_RX_PCM_FOUND=NO` queda reclasificada a
+> **INCONCLUSIVE**. Ver `qa38-spi3-i2s.md`; este documento se conserva como evidencia histórica.
+
+
 Fecha: 2026-11-04. Estudio **offline**, sin radio, sin flash, sin TX.
 Rama aislada `research/x6200-mcu-rx-path` desde `84777dff`; `main` no se tocó.
 
