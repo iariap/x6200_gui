@@ -43,3 +43,19 @@ Estado: ALSA diff vacío; GUI original; RX; sin TX/PTT/ATU/Bluetooth; sin nuevo 
 - No se repitió la prueba ni se cambió volumen/frecuencia del operador.
 - Gates sin cambios: `LINUX_DSP_SPEAKER=NOT_VERIFIED`; `TONES_DELIVERED=YES`;
   `AUDIBILITY_INCONCLUSIVE_QRM`.
+
+## Repetición con patrón ascendente (QRM S9)
+
+Se repitió con tres tonos ascendentes para hacerlos distinguibles del QSO/ruido:
+
+- 1,2 kHz — 0,8 s
+- silencio 0,3 s
+- 1,8 kHz — 0,8 s
+- silencio 0,3 s
+- 2,4 kHz — 0,8 s
+- silencio 0,8 s
+
+ALSA: `frames_total=182400`, `drain=0 Success`. DAC seleccionado por helper; retorno a BASE,
+GUI/PulseAudio/ALSA y ajustes restaurados. Sin nuevo flash.
+
+Audibilidad del patrón ascendente: **pendiente del reporte del propietario en esta repetición**.

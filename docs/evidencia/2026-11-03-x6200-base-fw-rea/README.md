@@ -271,3 +271,9 @@ de reporte del propietario; `LINUX_DSP_SPEAKER` aún NOT_VERIFIED. Sin nuevo fla
 El patrón se entregó a ALSA (`drain=0`), pero el propietario reporta QRM S9 y no puede
 identificar los beeps. Audibilidad **INCONCLUSA_QRM**; no se repitió ni se cambió la radio.
 No nuevo flash.
+
+
+## 27. QA34b — patrón ascendente
+
+Repetición con 1.2/1.8/2.4 kHz (0.8 s cada uno, gaps), `frames_total=182400`, `drain=0`.
+Retorno a BASE, GUI/PA/ALSA restaurados; sin flash. Audibilidad pendiente.
