@@ -1,0 +1,8 @@
+# Comandos reales (offline)
+- fork/main=681074e0; gh pr view 397/396/395/394 -> aef8f020/c7916d42/ddec3f96/56954c2d OPEN
+- worktree audit/linux-dsp-base-recovery desde 681074e0
+- gcc tools/.../test_recovery_evidence.c -> 13 checks, 0 fallos
+- ARM cross + qemu-arm-static test_recovery_evidence.arm -> 13 checks, 0 fallos (logs offline-model-qemu.log)
+- python3 recovery_measure.py --self-test -> PASS externo; BLOCKED sin referencia (sintético, no físico)
+- (cd #396-worktree && tests/linux-dsp-integration/run_tests.sh) -> 847 checks, 0 fallos; FEATURE_ON=RUN_OK; QEMU=PASS
+- git diff --check -> OK; sin activación QA/MUX, sin hardware/firmware/deploy

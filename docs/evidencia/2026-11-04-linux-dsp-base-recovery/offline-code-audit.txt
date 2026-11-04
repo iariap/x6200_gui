@@ -1,0 +1,13 @@
+# Auditoría de código (offline)
+
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:11:    bool available, physical_confirmed, shutdown_done;
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:39:    a->available = true; a->physical_confirmed = false; a->shutdown_done = false;
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:182:void route_arbiter_mark_unavailable(route_arbiter_t *a) {
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:187:    a->physical_confirmed = false; route_shadow_invalidate(&a->shadow);
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:195:bool route_arbiter_physical_confirmed(const route_arbiter_t *a) { (void)a; return false; }
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:197:route_err_t route_arbiter_shutdown_safe(route_arbiter_t *a, uint64_t now_ms) {
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:204:            a->available = false; a->physical_confirmed = false; a->shutdown_done = true;
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.c:214:    a->physical_confirmed = false; route_shadow_invalidate(&a->shadow);
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.h:56:void route_arbiter_mark_unavailable(route_arbiter_t *a);
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.h:59:bool route_arbiter_physical_confirmed(const route_arbiter_t *a);  /* siempre false sin readback */
+/home/pablo/desa/x6200/x6200-linux-dsp-recovery-hardening/src/linux_dsp_route/route_arbiter.h:62:route_err_t route_arbiter_shutdown_safe(route_arbiter_t *a, uint64_t now_ms);

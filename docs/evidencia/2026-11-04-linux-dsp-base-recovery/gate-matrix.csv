@@ -1,0 +1,9 @@
+gate,status,evidence_type,evidence,limitations
+LINUX_PCM_PROVENANCE,PASS,AUDIBLE/HARDWARE,"#397 physical-session-ch25 mute test: sink mute => audio desaparece; unmute => vuelve; activation ACTIVE","no se re-ejecutó en esta auditoría; no es readback MUX"
+MUX_EFFECTIVE_ROUTE_VERIFICATION,BLOCKED,no observation,"sin readback MCU (R' #370); ch25 prueba dependencia del sink, no selección de ruta",requiere observación física/readback autorizado
+SINGLE_WRITER_CONTROL_PHYSICAL,BLOCKED,no observation,"sólo estático/offline; no se observó I2C físico",no medición hardware
+ARBITER_FAILURE_RECOVERY,PASS,OFFLINE,"modelo recovery_evidence + #396 tests 847; mark_unavailable no writes; supervisor lost=BLOCKED",no fault físico
+INDEPENDENT_BASE_RESTORE_PHYSICAL,BLOCKED,analysis,"watchdog/supervisor dependen del árbitro/transporte; no writer alternativo",sin readback/acústica externa; no independiente
+RESTORE_250MS_PHYSICAL,PENDING,no measurement,"recovery_measure.py + plan; no ejecutado",requiere sesión autorizada/reloj externo
+TX_PTT_ATU_SAFETY,PENDING,no hardware test,"bits preservados offline (proxy/callsites); no TX/PTT/ATU",fuera de alcance sin autorización
+PRODUCTION_READY,FAIL,integration+physical,"gates físicos BLOCKED/PENDING; QA default OFF",prohibido PASS sin evidencia física
