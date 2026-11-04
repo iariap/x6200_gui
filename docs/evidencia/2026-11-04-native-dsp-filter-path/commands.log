@@ -1,0 +1,54 @@
+# Commands log — QA-NATIVE-DSP (#390) — 2026-11-04 UTC
+
+Offline: sin radio, sin flash/IAP/XMODEM, sin GPIO/registros/MUX/ALSA/GUI/ajustes.
+
+## 0. Base / aislamiento
+git -C x6200_gui fetch fork -> ok; fork/main=681074e0…; origin/main=e1476ece… (no usado); main local=6a29687d (intacto)
+gh pr view 391/389/388/386/385 --json headRefOid,state -> heads coinciden con el encargo (de35affa/c0299e0b/7cb97cf6/84777dff/68c501a8)
+git worktree add x6200-native-dsp-filter-path -b research/x6200-native-dsp-filter-path 681074e0 -> ok; HEAD=681074e0, limpio
+
+## 1. Fuentes leídas
+src/radio.c (observers filtros/AGC/DNF/NB/NR/EQ, WITH_RADIO_LOCK)
+src/cfg/cfg.c (defaults: agc_knee -60, slope 6, hang off, dnf 1000/50/off, nb 10/10, nr 0, EQ 0)
+src/cfg/mode.c (defaults por modo: LSB 50..2950, CW -250..250, AM 0..4500, NFM 0..3500, WFM 0..8000; DB negativo sólo CW; update_real_filters)
+src/dfl_inline.c/dfl_context.c (DFL display; dominio/edges; no DSP audible)
+src/audio_enhancement.c + src/dialog_settings.c (Capture filters: Speex/notch/AF leveler sobre copia capturada, NO audible)
+refs/X6200Control/src/control.c + include/.../low/control.h (setters y bitfields; filtros idx 30+45..50; NR/NB 23; DNF 24; AGC 27/28; EQ 35/36/37)
+
+## 2. REA
+tools/rea.sh --version -> 6.7.0
+tools/rea.sh capabilities -> exit 0
+tools/rea.sh analyze x6200-108.dec.bin --target-format raw-binary --architecture arm --entry-point 0x08020000 --provider ghidra --format json -> exit 0 (ev_86dc1b46…)
+tools/rea.sh analyze x6200_ui_v100 --provider ghidra --format json -> exit 0 (ev_659f9cf1…)
+tools/rea.sh decompile x6200_ui_v100 0xe5590 --provider ghidra --format json -> exit 0 (ev_168cf99f…, BaseCommIIC::updateRxFilters)
+
+## 3. Ghidra headless (12.1.4; 12.2 de /tmp no existe en este sandbox — desviación registrada)
+analyzeHeadless qa390-ghidra X6200 -process x6200-108.dec.bin -noanalysis -postScript QA19Scan.java -> RC=0
+... QA19Fw.java -> RC=0 ; QA19H2.java -> RC=0 ; QA19Handlers.java -> RC=0 (0 starts) ; QA19Region.java -> RC=1 constructores (corregido, sin starts)
+
+## 4. Comparación de versiones
+MCU 1.0.6 vs 1.0.8: mismos strings de control de filtros/DSP (logs/mcu-106-vs-108-filter-strings.txt)
+GUI vendor 1.0.6 vs 1.0.8: mismos símbolos/strings de filtros (logs/vendor-gui-106-vs-108-filter.txt)
+
+## 5. Tests offline
+python3 tools/native-dsp-rea/tests/test_register_mapping.py -> 9 tests OK (logs/qa19-tests.txt)
+  valida mapeo/bitfields/defaults/negativos del SDK y GUI; NO valida algoritmo DSP (PENDING)
+
+## 6. Validación del PR (sobre el commit documental 7a728e0c)
+
+```
+git diff --check 681074e0 HEAD                     -> exit 0 (sin whitespace)
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del diff: 2 gates con `uv` fallan por ~/.cache/uv read-only
+    ("Read-only file system (os error 30)") y check x6200-ab contracts queda BLOCKED exit 2;
+    `check_drawbuf_partial` falla porque el worktree nuevo no tiene el submódulo lvgl
+    inicializado (src/lvgl ausente).
+  - `[check] bash -n tools/native-dsp-rea/run.sh` -> ok ; resto [SKIP] por no tocar src/**.
+python3 asf/scripts/risk.py x6200 --files <29 archivos> -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"], auto_approve=false
+python3 tools/native-dsp-rea/tests/test_register_mapping.py -> 9 tests OK
+```
+
+Nota honesta: **no se declara PASS** de build/QEMU/contrato; el exit 1 de check-matrix es
+preexistente/entorno (uv cache read-only + submódulo lvgl ausente en este worktree). El diff es
+`docs/**` + `tools/native-dsp-rea/**`; no hay código de producción ni firmware.

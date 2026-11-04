@@ -1,0 +1,51 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/home/pablo/desa/x6200/.qa390/home
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/home/pablo/desa/x6200/.qa390/home
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/home/pablo/desa/x6200/.qa390/home
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/home/pablo/desa/x6200/.qa390/home
+openjdk version "21.0.13" 2026-10-20 LTS
+OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode)
+INFO  Using log config file: jar:file:/home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)
+INFO  Using log file: /home/pablo/desa/x6200/.qa390/home/.config/ghidra/ghidra_12.1.4_PUBLIC/application.log (LoggingInitialization)
+INFO  Loading user preferences: /home/pablo/desa/x6200/.qa390/home/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences (Preferences)
+INFO  Searching for classes... (ClassSearcher)
+INFO  Class search complete (724 ms) (ClassSearcher)
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)
+INFO  Initializing Random Number Generator... (SecureRandomFactory)
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)
+INFO  Headless startup complete (1557 ms) (AnalyzeHeadless)
+INFO  Class searcher loaded 59 extension points (20 false positives) (ClassSearcher)
+INFO  HEADLESS Script Paths:
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /home/pablo/desa/x6200/qa19-scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts (HeadlessAnalyzer)
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)
+INFO  Opening existing project: /home/pablo/desa/x6200/qa390-ghidra/X6200 (HeadlessAnalyzer)
+INFO  Opening project: /home/pablo/desa/x6200/qa390-ghidra/X6200 (HeadlessProject)
+INFO  REPORT: Processing project file: /x6200-108.dec.bin (HeadlessAnalyzer)
+INFO  REPORT: Execute script: QA19Region.java  (HeadlessAnalyzer)
+INFO  SCRIPT: /home/pablo/desa/x6200/qa19-scripts/QA19Region.java (HeadlessAnalyzer)
+INFO  QA19Region.java> starts=0 (GhidraScript)
+INFO  QA19Region.java> === FIN QA19Region === (GhidraScript)
+INFO  REPORT: Save succeeded for processed file: /x6200-108.dec.bin (HeadlessAnalyzer)
