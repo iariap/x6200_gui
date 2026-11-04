@@ -20,6 +20,10 @@
 
 #include "lvgl/lvgl.h"
 #include "audio.h"
+#ifdef X6200_LINUX_DSP_ROUTE
+#include "linux_dsp_route/route_hooks.h"
+
+#endif
 #include "meter.h"
 #include "dsp.h"
 #include "params/params.h"
@@ -80,6 +84,12 @@ static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
     screen_rec_put_audio_samples(samples, scratch);
 
     dsp_put_audio_samples(samples, scratch);
+
+#ifdef X6200_LINUX_DSP_ROUTE
+    /* Mismo buffer YA post-SpeexDSP; el worker del router lo reproduce por DAC/MUX
+     * (feature branch-local, DEFAULT OFF; sin doble Speex). */
+    x6200_route_audio_submit(scratch, samples, process);
+#endif
 }
 
 static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
@@ -196,6 +206,11 @@ static void *audio_init_thread(void *arg) {
 
 void audio_init() {
     pthread_t t;
+
+#ifdef X6200_LINUX_DSP_ROUTE
+    /* QA: crea wiring/sink/IPC antes de capturar; default OFF, falla cerrado. */
+    x6200_route_audio_init();
+#endif
 
     /* La cadena de capture filters se inicializa ACA, de forma SINCRONA y una sola vez,
      * ANTES de lanzar el hilo de PulseAudio: antes vivia dentro de audio_init_sync() y
@@ -456,6 +471,9 @@ void audio_gain_db_transition(int16_t *buf, size_t samples, float gain1, float g
 }
 
 void audio_play_en(bool on) {
+#ifdef X6200_LINUX_DSP_ROUTE
+    x6200_route_audio_generated(on);   /* prioridad TTS/generado: suspende RX router */
+#endif
     if (on) {
         /* Para ENTRAR en modo reproduccion hace falta el stream: si PulseAudio no
          * esta listo no se toca el ruteo del MCU (no habria que restaurar despues). */

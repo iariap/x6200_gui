@@ -1,0 +1,42 @@
+--- a/include/aether_radio/x6200_control/low/control.h
++++ b/include/aether_radio/x6200_control/low/control.h
+@@ -8,6 +8,7 @@
+  */
+
+ #pragma once
++#include <stddef.h>
+
+ #include "aether_radio/x6200_control/api.h"
+
+@@ -162,6 +163,10 @@
+ AETHER_X6200CTRL_API bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg);
+ AETHER_X6200CTRL_API bool x6200_control_host_cmd(uint16_t data);
+ AETHER_X6200CTRL_API void x6200_control_idle();
++/* QA-LINUX-DSP (branch-local patch; no ABI change): sombra autoritativa para el proxy
++ * single-writer y bulk-write del bloque completo. */
++AETHER_X6200CTRL_API void x6200_control_shadow_update(uint32_t cmd, uint32_t arg);
++AETHER_X6200CTRL_API bool x6200_control_bulk_write(const uint8_t *block, size_t len);
+ AETHER_X6200CTRL_API bool x6200_control_set_band(uint32_t freq);
+ AETHER_X6200CTRL_API uint32_t x6200_control_get(x6200_cmd_enum_t cmd);
+ AETHER_X6200CTRL_API char* x6200_control_get_fw_version();
+--- a/src/low/control.c
++++ b/src/low/control.c
+@@ -477,6 +477,18 @@
+         return NULL;
+ }
+
++void x6200_control_shadow_update(uint32_t cmd, uint32_t arg)
++{
++    if (cmd < sizeof(all_cmd.arg) / sizeof(all_cmd.arg[0]))
++        all_cmd.arg[cmd] = arg;
++}
++
++bool x6200_control_bulk_write(const uint8_t *block, size_t len)
++{
++    if (block == NULL || len != sizeof(all_cmd)) return false;
++    return send_regs(block, len);
++}
++
+ void x6200_control_idle()
+ {
+     if (!send_regs(&all_cmd, sizeof(all_cmd))) {

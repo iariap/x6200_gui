@@ -1,0 +1,10 @@
+gate,status,class,evidence,notes
+SINGLE_WRITER_CONTROL,PASS (offline integration),HOST,"tests serialization/ownership + proxy/call-sites 88+53 checks; transport adapter x6200_control_cmd", "Call-sites reg12 interpuestos; idle NO refresca directo cuando proxy activo (ROUTE_ERR_UNSUPPORTED) => refresco bloqueado con causa documentada; RX_LINUX sigue bloqueado. Feature DEFAULT OFF."
+SHADOW_COHERENCE,PASS (offline integration),HOST,"route_shadow: se invalida en bus error/restart/ownership; tests boot_fail/restart/apply_shared; wiring worker/sink","Sin readback MCU (R' #370): la sombra es la verdad LOGICA; la fisica queda BLOCKED."
+MUX_PHYSICAL_STATE_VERIFICATION,BLOCKED,PHYSICAL,"R' #370 R_INCONCLUSIVE (lecturas 00000000); A' #368 guardian inactivo","No hay readback del MCU; la verificacion fisica del MUX/restore requiere instrumentacion y autorizacion del owner."
+TX_PTT_ATU_ISOLATION,PASS (offline integration),HOST,"tests tx_ordering/tx_bus_fail/apply_shared; disable-first y bits preservados","Fisico TX/PTT/ATU no verificado; PENDING fisico."
+ARBITER_FAILURE_RECOVERY,PASS (offline integration),HOST,"tests supervisor: lease->REQUEST_RESTORE; arbiter no responde->FAULT","El supervisor NO escribe reg12; si el arbitro esta caido no hay restore independiente y se bloquea (FAULT)."
+INDEPENDENT_BASE_RESTORE,PASS (offline integration),HOST,"test lease_restore/test supervisor; arbitro escribe BASE sin GUI","No desplegado: requiere lanzamiento del arbitro+supervisor (feature OFF, no service wiring)."
+RESTORE_250MS_PHYSICAL,BLOCKED / PENDING,PHYSICAL,"physical-qa-protocol (no ejecutado)","Requiere radio, build integrada, autorizacion y medicion; no se declara PASS."
+PCM_TO_SPEAKER_PHYSICAL,PENDING,PHYSICAL,"evidencia audible 2026-11-02 en build experimental; no build actual","Ruta audible demostrada antes; build integrada actual no validada fisicamente."
+PRODUCTION_READY,FAIL,PHYSICAL+INTEGRATION,"gate-matrix; integrated-architecture","Prohibido PASS sin evidencia fisica; feature DEFAULT OFF, sin deploy, sin DAEMON/service wiring."
