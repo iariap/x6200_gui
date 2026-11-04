@@ -123,3 +123,11 @@ check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, 
 tests/.../run_tests.sh -> 208 + 29 + 88 + 52 = 377 comprobaciones, 0 fallos
   -> FEATURE_ON_BUILD=RUN_OK; ARM route_libaether_proxy.arm.on.o; QEMU_SELF_CHECK=PASS
 ```
+
+## 10. Validacion call-sites (commit c9f88fd9)
+
+```
+git diff --check -> exit 0
+tests -> 377 comprobaciones, 0 fallos; FEATURE_ON_BUILD=RUN_OK; ARM wrapper object; QEMU=PASS
+check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
+```
