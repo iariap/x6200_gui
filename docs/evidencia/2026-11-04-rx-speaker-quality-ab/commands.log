@@ -24,5 +24,20 @@ python3 tools/rx-speaker-quality/analyze_audio_ab.py > logs/offline-model.json -
 python3 tools/rx-speaker-quality/tests/test_audio_ab.py > logs/tests.txt -> 5 tests OK
   (MODEL: pasabanda -15.7 dB fuera de banda; notch -19.2 dB; AGC 0 clipping; etiquetados MODEL, no firmware/acústico)
 
-## 4. Validación del PR (sobre el commit documental)
-[pendiente: git diff --check / check-matrix / risk; ver commit final]
+## 4. Validación del PR (commit documental 45eb7bde)
+
+```
+git diff --check 681074e0 HEAD                     -> exit 0 (sin whitespace)
+python3 tools/rx-speaker-quality/tests/test_audio_ab.py -> 5 tests OK
+python3 tools/rx-speaker-quality/analyze_audio_ab.py    -> exit 0 (consistency 10/10)
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del diff: 2 gates con `uv` por ~/.cache/uv read-only
+    ("Read-only file system (os error 30)") y check_drawbuf_partial por submódulo lvgl
+    no inicializado en el worktree nuevo.
+  - gates de shell: no aplica (no se agregaron .sh).
+python3 asf/scripts/risk.py x6200 --files <28 archivos> -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"], auto_approve=false
+```
+
+Nota honesta: **no se declara PASS** de build/QEMU/contrato; el diff es docs + tools (python) y no
+toca código de producción. El exit 1 de check-matrix es preexistente/entorno.

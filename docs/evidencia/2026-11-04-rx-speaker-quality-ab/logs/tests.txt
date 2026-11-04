@@ -5,6 +5,6 @@ test_constants_source (__main__.TestConsistency.test_constants_source) ... ok
 test_notch_attenuates_tone (__main__.TestConsistency.test_notch_attenuates_tone) ... ok
 
 ----------------------------------------------------------------------
-Ran 5 tests in 3.197s
+Ran 5 tests in 3.214s
 
 OK
