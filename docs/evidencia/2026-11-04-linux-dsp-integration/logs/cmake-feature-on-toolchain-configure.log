@@ -1,0 +1,12 @@
+-- x6200_gui: fuente md5 0a0ead63f8f2572282eb2ffce6b25be2
+CMake Warning (dev) at lvgl/env_support/cmake/custom.cmake:66 (install):
+  Policy CMP0177 is not set: install() DESTINATION paths are normalized.  Run
+  "cmake --help-policy CMP0177" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+Call Stack (most recent call first):
+  lvgl/CMakeLists.txt:16 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Configuring done (0.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/pablo/desa/x6200/x6200-linux-dsp-integration/.qa-build/cmake-tc
