@@ -59,3 +59,18 @@ ALSA: `frames_total=182400`, `drain=0 Success`. DAC seleccionado por helper; ret
 GUI/PulseAudio/ALSA y ajustes restaurados. Sin nuevo flash.
 
 Audibilidad del patrón ascendente: **pendiente del reporte del propietario en esta repetición**.
+
+## Repetición con nivel alto y tonos agudos
+
+Ante QRM S9 persistente se repitió con:
+
+- 1,2 kHz — 0,9 s
+- 2,4 kHz — 0,9 s
+- 3,6 kHz — 0,9 s
+- silencios de 0,3/0,3/0,8 s
+- amplitud PCM **24000** (vs 6000/12000 anteriores)
+
+ALSA: `frames_total=196800`, `drain=0 Success`. DAC por helper; retorno a BASE; GUI/PA/ALSA y
+ajustes restaurados. Sin nuevo flash.
+
+Audibilidad del patrón alto: **pendiente del reporte del propietario**.

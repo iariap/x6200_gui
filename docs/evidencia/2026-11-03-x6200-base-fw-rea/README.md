@@ -277,3 +277,9 @@ No nuevo flash.
 
 Repetición con 1.2/1.8/2.4 kHz (0.8 s cada uno, gaps), `frames_total=182400`, `drain=0`.
 Retorno a BASE, GUI/PA/ALSA restaurados; sin flash. Audibilidad pendiente.
+
+
+## 28. QA34c — tono alto
+
+Patrón 1.2/2.4/3.6 kHz, amplitud PCM 24000, `frames_total=196800`, `drain=0`. Retorno BASE y
+restauración; sin flash. Audibilidad pendiente.
