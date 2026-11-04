@@ -29,6 +29,9 @@ route_err_t route_proxy_modem_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_swrscan_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_split_set(route_proxy_t *p, bool on);
 route_err_t route_proxy_poweroff(route_proxy_t *p);
+/* Refresh idle: bloque de 54 regs (snapshot autoritativo) vía IPC; el arbitro
+ * decide merge de ruta/TX y escribe 218 B por su transporte bulk. */
+route_err_t route_proxy_refresh_block(route_proxy_t *p, const uint32_t regs[ROUTE_SNAPSHOT_REGS]);
 route_err_t route_proxy_calibration_set(route_proxy_t *p, bool on);
 /* voice_rec: la GUI NO lo escribe; el arbitro es el dueño. Devuelve OWNERSHIP. */
 route_err_t route_proxy_record_set(route_proxy_t *p, bool on);

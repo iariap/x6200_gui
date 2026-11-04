@@ -170,3 +170,17 @@ cmake --build --target x6200_route_service -> ARM EABI5 OK (libaether del sysroo
 cmake --build --target x6200_gui -> FAIL en src/radio.c:65/69 static assertions ABI preexistentes
   (samples[512], sizeof flow 552) vs SDK del sysroot => SKIP entorno, no PASS
 ```
+
+## 14. Snapshot-bulk stage (task-28)
+
+```
+# route_common: bus.write_block; route_ipc: REQ_REFRESH + block[54] + client_refresh
+# route_arbiter_refresh: valida lease/sombra/bulk; merge voice_rec; strips TX en ruta; bus fail=>FAULT
+# route_proxy_refresh_block; transport adapter condicional X6200_CTRL_HAVE_BULK_WRITE
+# parche propuesto X6200Control (shadow_update + bulk_write 218B) en docs/.../patches/ (NO aplicado)
+# tests: test_refresh 47 checks
+tests -> 208+29+88+53+47+24+47 = 496 comprobaciones, 0 fallos; FEATURE_ON=RUN_OK; QEMU=PASS
+# GUI feature-ON build reintento con toolchain Buildroot:
+#   configure OK; service ARM OK; GUI falla static assertions ABI radio.c:65/69 (samples[512]/flow 552)
+#   contra libaether/X6200Control 0.15.3 del sysroot => mismatch repo/SDK, SKIP entorno (no PASS)
+```

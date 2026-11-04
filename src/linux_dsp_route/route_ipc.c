@@ -118,6 +118,12 @@ int route_ipc_server_serve(route_ipc_server_t *s, int timeout_ms) {
         case ROUTE_IPC_REQ_STATUS:
             e = ROUTE_ERR_OK;
             break;
+        case ROUTE_IPC_REQ_REFRESH: {
+            uint32_t blk[ROUTE_SNAPSHOT_REGS];
+            memcpy(blk, req.block, sizeof(blk));
+            e = route_arbiter_refresh(s->arb, blk, req.mono_ms);
+            break;
+        }
         case ROUTE_IPC_REQ_SHUTDOWN:
             s->running = false;
             break;
@@ -159,4 +165,24 @@ int route_ipc_client_request(route_ipc_client_t *c, uint32_t type, uint32_t valu
     if (n <= 0) return -1;
     if (route_ipc_decode(resp, (size_t)n, resp) != 0) return -1;
     return 0;
+}
+
+int route_ipc_client_refresh(route_ipc_client_t *c, const uint32_t regs[ROUTE_SNAPSHOT_REGS],
+                             uint64_t now_ms, route_ipc_msg_t *resp, int timeout_ms) {
+    if (c == NULL || c->fd < 0 || regs == NULL || resp == NULL) return -1;
+    route_ipc_msg_t req;
+    memset(&req, 0, sizeof(req));
+    req.magic = ROUTE_IPC_MAGIC; req.version = ROUTE_IPC_VERSION; req.type = ROUTE_IPC_REQ_REFRESH;
+    memcpy(req.token, c->token, ROUTE_IPC_TOKEN_LEN);
+    req.pid = c->pid; req.starttime = c->starttime; req.mono_ms = now_ms; req.seq = ++c->seq;
+    memcpy(req.block, regs, sizeof(req.block));
+    uint8_t buf[sizeof(req)];
+    if (route_ipc_encode(&req, buf, sizeof(buf)) != sizeof(req)) return -1;
+    if (send(c->fd, buf, sizeof(req), 0) != (ssize_t)sizeof(req)) return -1;
+    struct pollfd p = { .fd = c->fd, .events = POLLIN };
+    int pr = poll(&p, 1, timeout_ms);
+    if (pr <= 0) return (pr == 0) ? -2 : -1;
+    ssize_t n = recv(c->fd, resp, sizeof(*resp), 0);
+    if (n <= 0) return -1;
+    return route_ipc_decode(resp, (size_t)n, resp) == 0 ? 0 : -1;
 }

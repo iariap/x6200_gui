@@ -72,6 +72,12 @@ route_err_t route_proxy_split_set(route_proxy_t *p, bool on) {
 }
 route_err_t route_proxy_poweroff(route_proxy_t *p) { return rmw(p, ROUTE_REG_POWER_OFF, 0u); }
 route_err_t route_proxy_calibration_set(route_proxy_t *p, bool on) { return rmw(p, on ? 0x8000u : 0u, on ? 0u : 0x8000u); }
+route_err_t route_proxy_refresh_block(route_proxy_t *p, const uint32_t regs[ROUTE_SNAPSHOT_REGS]) {
+    if (p == NULL || !p->enabled || regs == NULL) return ROUTE_ERR_NOT_READY;
+    route_ipc_msg_t r;
+    if (route_ipc_client_refresh(p->ipc, regs, now_ms(), &r, 100) != 0) return ROUTE_ERR_TIMEOUT;
+    return (route_err_t)r.err;
+}
 route_err_t route_proxy_record_set(route_proxy_t *p, bool on) {
     (void)on;
     if (p == NULL) return ROUTE_ERR_INVALID;

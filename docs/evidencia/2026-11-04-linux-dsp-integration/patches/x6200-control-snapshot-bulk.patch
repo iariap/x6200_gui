@@ -1,0 +1,31 @@
+# Propuesta de parche para X6200Control (repo externo AetherX6200 / refs/X6200Control).
+# NO aplicado en este PR (no es el repo del PR); requerido para habilitar idle refresh.
+# Añade: sombra autoritativa actualizable por el proxy + bulk-write de 218 B.
+diff --git a/include/aether_radio/x6200_control/low/control.h b/include/aether_radio/x6200_control/low/control.h
+--- a/include/aether_radio/x6200_control/low/control.h
++++ b/include/aether_radio/x6200_control/low/control.h
+@@ -160,6 +160,9 @@ AETHER_X6200CTRL_API bool x6200_control_get_all(uint32_t *out, size_t count);
+ AETHER_X6200CTRL_API bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg);
+ AETHER_X6200CTRL_API void x6200_control_idle();
++/* QA-LINUX-DSP: sombra autoritativa actualizada por el proxy single-writer. */
++AETHER_X6200CTRL_API void x6200_control_shadow_update(uint32_t cmd, uint32_t arg);
++/* QA-LINUX-DSP: envía el bloque completo (2B addr BE + 54*u32 LE = 218 B). */
++AETHER_X6200CTRL_API bool x6200_control_bulk_write(const uint8_t *block, size_t len);
+diff --git a/src/low/control.c b/src/low/control.c
+--- a/src/low/control.c
++++ b/src/low/control.c
+@@ -477,6 +477,16 @@ void x6200_control_init(void)
++void x6200_control_shadow_update(uint32_t cmd, uint32_t arg)
++{
++    if (cmd < sizeof(all_cmd.arg)/sizeof(all_cmd.arg[0])) all_cmd.arg[cmd] = arg;
++}
++
++bool x6200_control_bulk_write(const uint8_t *block, size_t len)
++{
++    if (block == NULL || len != 218) return false;
++    return send_regs(block, len);
++}
++
+ void x6200_control_idle()
+ {
+     if (!send_regs(&all_cmd, sizeof(all_cmd))) {

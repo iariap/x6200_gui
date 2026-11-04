@@ -41,6 +41,13 @@ route_err_t route_arbiter_pcm_submit(route_arbiter_t *a, size_t samples, uint32_
                                      bool post_speex, uint64_t block_id, uint64_t now_ms);
 route_err_t route_arbiter_pcm_missing(route_arbiter_t *a, uint64_t now_ms);
 
+/* Refresh idle propiedad del arbitro: recibe snapshot autoritativo de 54 regs.
+ * Sólo si el bus tiene write_block y la sombra/lease son válidos; sin 54 writes.
+ * Merge: voice_rec = estado de ruta; rechaza bits TX sin TX_PREPARE. */
+route_err_t route_arbiter_refresh(route_arbiter_t *a, const uint32_t block[ROUTE_SNAPSHOT_REGS],
+                                  uint64_t now_ms);
+bool route_arbiter_refresh_available(const route_arbiter_t *a);
+
 /* Tick del arbitro: detecta lease vencido/guia caida y restaura BASE sin GUI. */
 route_event_t route_arbiter_tick(route_arbiter_t *a, uint64_t now_ms);
 

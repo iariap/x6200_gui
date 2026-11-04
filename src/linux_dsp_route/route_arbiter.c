@@ -183,6 +183,50 @@ route_event_t route_arbiter_tick(route_arbiter_t *a, uint64_t now_ms) {
     return ROUTE_EV_OK;
 }
 
+bool route_arbiter_refresh_available(const route_arbiter_t *a) {
+    return a != NULL && a->bus.write_block != NULL;
+}
+route_err_t route_arbiter_refresh(route_arbiter_t *a, const uint32_t block[ROUTE_SNAPSHOT_REGS],
+                                  uint64_t now_ms) {
+    if (a == NULL || block == NULL) return ROUTE_ERR_INVALID;
+    if (!a->initialized || a->state == ROUTE_STATE_FAULT) return ROUTE_ERR_UNKNOWN_STATE;
+    if (!route_shadow_valid(&a->shadow)) return ROUTE_ERR_UNKNOWN_STATE;
+    if (!hb_fresh(a, now_ms)) return ROUTE_ERR_NOT_READY;
+    if (a->bus.write_block == NULL) { a->stats.denied++; return ROUTE_ERR_UNSUPPORTED; }
+    /* Snapshot de 54 regs = 218 B; el bloque contiene args[0..53]. */
+    uint32_t regs[ROUTE_SNAPSHOT_REGS];
+    memcpy(regs, block, sizeof(regs));
+    bool route_on = (a->state == ROUTE_STATE_RX_LINUX);
+    if (!route_on) {
+        /* si hay bits TX en el snapshot, deben venir de TX_PREPARE (estado no RX) */
+        if ((a->state != ROUTE_STATE_DEGRADED_BASE) && (regs[12] & ROUTE_TX_ACTIVITY_MASK)) {
+            a->stats.denied++; return ROUTE_ERR_TX_ACTIVE;
+        }
+    } else {
+        regs[12] &= ~ROUTE_TX_ACTIVITY_MASK;   /* ruta activa: jamás TX por refresh */
+    }
+    /* merge: voice_rec lo decide el arbitro, no el bloque de la GUI */
+    if (route_on) regs[12] |= ROUTE_REG_VOICE_REC; else regs[12] &= ~ROUTE_REG_VOICE_REC;
+    uint8_t wire[ROUTE_SNAPSHOT_BYTES];
+    wire[0] = 0; wire[1] = 0;
+    for (unsigned i = 0; i < ROUTE_SNAPSHOT_REGS; i++) {
+        wire[2 + 4*i] = (uint8_t)(regs[i] & 0xFF);
+        wire[2 + 4*i + 1] = (uint8_t)((regs[i] >> 8) & 0xFF);
+        wire[2 + 4*i + 2] = (uint8_t)((regs[i] >> 16) & 0xFF);
+        wire[2 + 4*i + 3] = (uint8_t)((regs[i] >> 24) & 0xFF);
+    }
+    a->stats.writes++;
+    if (a->bus.write_block(a->bus.ctx, wire, sizeof(wire)) != 0) {
+        a->stats.bus_errors++; route_shadow_invalidate(&a->shadow);
+        a->state = ROUTE_STATE_FAULT; a->stats.fault_count++; a->last_err = ROUTE_ERR_BUS;
+        return ROUTE_ERR_BUS;
+    }
+    route_shadow_apply_success(&a->shadow, regs[12]);
+    a->stats.refreshes++;
+    a->stats.last_refresh_ms = now_ms;
+    return ROUTE_ERR_OK;
+}
+
 route_state_t route_arbiter_state(const route_arbiter_t *a) { return a ? a->state : ROUTE_STATE_FAULT; }
 bool route_arbiter_enabled(const route_arbiter_t *a) { return a ? a->enabled : false; }
 const route_shadow_t *route_arbiter_shadow(const route_arbiter_t *a) { return a ? &a->shadow : NULL; }

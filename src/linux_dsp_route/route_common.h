@@ -24,6 +24,8 @@
 #define ROUTE_TX_ACTIVITY_MASK (ROUTE_REG_SWRSCAN|ROUTE_REG_ATUE|ROUTE_REG_ATU_TUNE|ROUTE_REG_MODEM|ROUTE_REG_POWER_OFF|ROUTE_REG_IPTT)
 #define ROUTE_PRESERVE_MASK (~ROUTE_REG_VOICE_REC)
 
+#define ROUTE_SNAPSHOT_REGS 54u
+#define ROUTE_SNAPSHOT_BYTES (2u + 4u * ROUTE_SNAPSHOT_REGS)
 #define ROUTE_HEARTBEAT_MAX_MS  50u
 #define ROUTE_LEASE_MS         100u
 #define ROUTE_RESTORE_BUDGET_MS 250u
@@ -64,6 +66,9 @@ typedef enum {
  * No hay readback obligatorio: la verdad es el shadow del arbitro. */
 typedef struct {
     int (*write_reg12)(void *ctx, uint32_t value);
+    /* Bulk de 218 B (addr BE + 54 u32 LE). NULL si el transporte no lo soporta:
+     * el refresh idle queda deshabilitado (no hay 54 writes individuales). */
+    int (*write_block)(void *ctx, const uint8_t *block, size_t len);
     void *ctx;
 } route_bus_t;
 
@@ -71,6 +76,8 @@ typedef struct {
     uint32_t writes, restores, denied, bus_errors, overflows, pcm_blocks;
     uint32_t double_process, tx_disables, fault_count, invalidations;
     uint64_t last_restore_ms, last_restore_latency_ms, max_restore_latency_ms;
+    uint64_t last_refresh_ms;
+    uint32_t refreshes;
     uint64_t last_heartbeat_ms;
 } route_stats_t;
 

@@ -19,6 +19,9 @@
 
 #ifdef X6200_LINUX_DSP_ROUTE
 int route_transport_x6200_write_reg12(void *ctx, uint32_t value);
+#ifdef X6200_CTRL_HAVE_BULK_WRITE
+int route_transport_x6200_write_block(void *ctx, const uint8_t *block, size_t len);
+#endif
 #endif
 
 static uint64_t mono_ms(void) {
@@ -61,7 +64,11 @@ int main(int argc, char **argv) {
     if (strcmp(mode, "--arbiter") == 0) {
         route_bus_t bus;
 #ifdef X6200_LINUX_DSP_ROUTE
-        bus.write_reg12 = route_transport_x6200_write_reg12; bus.ctx = NULL;
+        bus.write_reg12 = route_transport_x6200_write_reg12;
+#ifdef X6200_CTRL_HAVE_BULK_WRITE
+        bus.write_block = route_transport_x6200_write_block;
+#endif
+        bus.ctx = NULL;
 #else
         bus.write_reg12 = mock_write; bus.ctx = NULL;
 #endif

@@ -25,7 +25,13 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$OUT/test_callsites"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" \
     "$SRC/route_snapshot.c" "$HERE/test_snapshot.c" -o "$OUT/test_snapshot"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
+"$OUT/test_refresh"
 "$OUT/test_snapshot"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
+    "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
+"$OUT/test_refresh"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
