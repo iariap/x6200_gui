@@ -1,0 +1,3 @@
+restore_latency_ms=110 (budget=250)
+156 comprobaciones, 0 fallos
+/tmp/qa-linux-dsp-safe/route_arbiter_model.arm.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV), not stripped
