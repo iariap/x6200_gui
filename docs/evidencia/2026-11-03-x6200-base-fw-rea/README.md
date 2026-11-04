@@ -290,3 +290,12 @@ restauración; sin flash. Audibilidad pendiente.
 Incluso BASE con `DAC Playback Switch=on` y volumen máximo no produjo tono audible; PCM aceptado,
 codec habilitado, QSO nativo audible. `LINUX_DSP_SPEAKER=FAIL` para la ruta PCM probada.
 La UI se reinició por el stop/start controlado, no por reboot del sistema. Sin nuevo flash.
+
+
+## 30. QA36 — PCM silencioso/H1
+
+H1 deja reg0x34≈4 (vs 0x44 candidato) y conserva reg0x36/37/39; ALSA directo tenía AIF1 DA0=160,
+DAC/HP on y aun así no hubo tono DAC. QA11b previo (bit0x40 presente) sí oyó DAC+TONE.
+`H1_DAC_ROUTE_DISABLED=LIKELY`; `LINUX_PCM_PATH_FAULT=UNKNOWN`;
+`PREVIOUS_AUDIBLE_EVIDENCE=VALID` (QA11b, no QA33); `COMBINED_RX_DAC_ROUTE=UNPROVEN`.
+No hay nuevo firmware ni flash.
