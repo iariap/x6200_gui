@@ -257,3 +257,10 @@ El propietario informa que el audio siempre fue audible (QSO). Eso demuestra que
 no quedó mudo, pero no identifica la fuente: QA10 ya documentó una ruta nativa extra fuera de
 PulseAudio. La captura ADC sigue baja en DAC. `SPEAKER_AUDIO_HEARD=YES` (reporte);
 `LINUX_DSP_SPEAKER=NOT_VERIFIED`; no se hizo otro flash.
+
+
+## 25. QA34 — patrón de tono DAC
+
+Patrón de tres beeps de 1 kHz, 0,6 s con 0,4 s de silencio, por `hw:0,0` con DAC seleccionado;
+`frames_total=172800`, `drain=0`. Retorno a BASE, GUI/PA/ALSA restaurados. Audibilidad pendiente
+de reporte del propietario; `LINUX_DSP_SPEAKER` aún NOT_VERIFIED. Sin nuevo flash.
