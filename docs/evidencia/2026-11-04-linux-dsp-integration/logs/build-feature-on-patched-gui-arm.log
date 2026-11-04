@@ -1,0 +1,5 @@
+2774:[100%] Built target x6200_gui
+36:[  4%] Built target x6200_linux_dsp_route
+2774:[100%] Built target x6200_gui
+2775:[ 50%] Built target x6200_linux_dsp_route
+2780:collect2: error: ld returned 1 exit status

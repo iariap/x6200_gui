@@ -28,10 +28,20 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
 "$OUT/test_refresh"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -rdynamic -I"$SRC" -I"$HERE/stubs" \
+    -DROUTE_LIB_PROXY_TEST -DX6200_LINUX_DSP_ROUTE=1 -DX6200_CTRL_HAVE_BULK_WRITE=1 $COMMON \
+    "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$SRC/route_libaether_proxy.c" \
+    "$HERE/test_patched.c" -o "$OUT/test_patched" -lpthread
+"$OUT/test_patched"
 "$OUT/test_snapshot"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
 "$OUT/test_refresh"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -rdynamic -I"$SRC" -I"$HERE/stubs" \
+    -DROUTE_LIB_PROXY_TEST -DX6200_LINUX_DSP_ROUTE=1 -DX6200_CTRL_HAVE_BULK_WRITE=1 $COMMON \
+    "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$SRC/route_libaether_proxy.c" \
+    "$HERE/test_patched.c" -o "$OUT/test_patched" -lpthread
+"$OUT/test_patched"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \

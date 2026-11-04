@@ -34,6 +34,8 @@ message(STATUS "x6200_gui: fuente md5 ${X6200_FUENTE_MD5}")
 include_directories(.)
 # QA-LINUX-DSP-INTEGRATION (#362): infraestructura branch-local, DEFAULT OFF.
 option(X6200_LINUX_DSP_ROUTE "Build branch-local Linux-DSP safe speaker route infra (default OFF)" OFF)
+# Sólo para builds con la API bulk/sombra parcheada de X6200Control (QA local).
+option(X6200_CTRL_HAVE_BULK_WRITE "X6200Control has branch-local snapshot/bulk-write API (default OFF)" OFF)
 
 include_directories(third-party/rapidxml)
 include_directories(third-party/utf8)

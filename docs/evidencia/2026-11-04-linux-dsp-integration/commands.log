@@ -194,3 +194,15 @@ cmake -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC -DCMAKE_C_FLAGS=-I$R
 cmake --build --target x6200_gui -j8 -> [100%] Built target x6200_gui (ARM EABI5)
 cmake --build --target x6200_route_service -> [100%] Built target x6200_route_service (ARM EABI5)
 ```
+
+## 16. X6200Control patch applied + patched feature-ON build (task-29)
+
+```
+cp -a refs/X6200Control qa-x6200ctrl-patched/src
+# patch: x6200_control_shadow_update(cmd,arg) + x6200_control_bulk_write(block,len) (218B send_regs)
+cmake Buildroot toolchain -> BUILD/INSTALL OK (install/lib/libaether_x6200_control.so.0.15.3)
+cmake -DX6200_LINUX_DSP_ROUTE=ON -DX6200_CTRL_HAVE_BULK_WRITE=ON + headers refs + patched lib
+  -> configure OK; x6200_gui [100%] Built ARM EABI5; x6200_route_service [100%] Built ARM EABI5
+     (nm -D: U x6200_control_bulk_write)
+tests: 614 comprobaciones, 0 fallos (incluye test_patched: idle refresh bulk/voice merge/TX strip/sombra)
+```

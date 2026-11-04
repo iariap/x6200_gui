@@ -5,6 +5,9 @@ add_library(x6200_linux_dsp_route STATIC
     route_client_worker.c route_wiring.c route_hooks.c route_transport_x6200.c
     route_proxy.c route_snapshot.c)
 target_compile_definitions(x6200_linux_dsp_route PUBLIC X6200_LINUX_DSP_ROUTE=1)
+if(X6200_CTRL_HAVE_BULK_WRITE)
+    target_compile_definitions(x6200_linux_dsp_route PUBLIC X6200_CTRL_HAVE_BULK_WRITE=1)
+endif()
 target_include_directories(x6200_linux_dsp_route PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(x6200_linux_dsp_route PUBLIC pthread)
 add_executable(x6200_route_arbiter route_daemon_main.c)

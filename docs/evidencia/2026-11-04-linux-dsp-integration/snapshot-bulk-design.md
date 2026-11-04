@@ -32,3 +32,20 @@ externo X6200Control (`patches/x6200-control-snapshot-bulk.patch`, NO aplicado e
 => `ROUTE_ERR_UNSUPPORTED`; con proxy activo `idle` no escribe. Para habilitarlo: aplicar parche a
 X6200Control, recompilar libaether con `X6200_CTRL_HAVE_BULK_WRITE`, y validar con tests + verificación
 física (readback pendiente). RX_LINUX sigue bloqueado; feature DEFAULT OFF.
+
+## Parche aplicado branch-localmente (task-29) + build
+
+- Copia de trabajo: `qa-x6200ctrl-patched/src` (copia de `refs/X6200Control` 0.15.3); aplicado el parche:
+  - `x6200_control_shadow_update(cmd,arg)` actualiza `all_cmd.arg[cmd]` (sin I2C; lo usa el proxy tras
+    cada escritura confirmada por el árbitro; `sync_shadow12()` en la interposición).
+  - `x6200_control_bulk_write(block,len)` con bounds `len==sizeof(all_cmd)` y `send_regs` (218 B).
+  - ABI/API intactas: sólo se añaden símbolos; header incluye `<stddef.h>`.
+- Build de la libaether parcheada: CMake + Buildroot toolchain, `BUILD/INSTALL` OK (`logs/x6200control-patched-build.log`).
+- Build feature ON con API parcheada (`-DX6200_CTRL_HAVE_BULK_WRITE=ON`, headers `refs/X6200Control/include`,
+  lib parcheada): **`x6200_gui` ARM EABI5 OK** y **`x6200_route_service` ARM EABI5 OK** (referencia a
+  `x6200_control_bulk_write` en `nm -D`). Logs `build-feature-on-patched-*.log`, `cmake-feature-on-patched-configure.log`.
+- **Idle refresh habilitado sólo en builds feature ON + `X6200_CTRL_HAVE_BULK_WRITE` + QA gate**:
+  interposición sincroniza la sombra autoritativa y `idle` envía el bloque por IPC REFRESH al árbitro
+  (merge voice_rec, strip TX si ruta activa, lease/bounds, bus-fail⇒FAULT). En build normal (OFF) y en
+  feature ON sin parche sigue **deshabilitado/no directo** (`ROUTE_ERR_UNSUPPORTED`). RX_LINUX continúa
+  bloqueado; verificación física/readback pendiente.

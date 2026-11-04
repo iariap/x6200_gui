@@ -5,8 +5,13 @@
 #define ROUTE_REFRESH_LEASE_MS 1000u
 #include "route_libaether_proxy.h"
 #include "route_snapshot.h"
+#include "route_ipc.h"
+#ifdef X6200_CTRL_HAVE_BULK_WRITE
+#include <aether_radio/x6200_control/low/control.h>
+#endif
 #include <dlfcn.h>
 #include <signal.h>
+#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -21,6 +26,14 @@ route_proxy_t *route_libaether_proxy_get(void) { return g_proxy; }
 route_err_t route_libaether_proxy_last_error(void) { return g_last_err; }
 static bool active(void) { return g_proxy != NULL && route_proxy_is_enabled(g_proxy); }
 static void note(route_err_t e) { if (e != ROUTE_ERR_OK) g_last_err = e; }
+/* Con el parche X6200Control, mantener la sombra de libaether coherente con las
+ * escrituras proxied (sin escritura I2C). Sin parche, no-op (weak). */
+extern void x6200_control_shadow_update(uint32_t cmd, uint32_t arg) __attribute__((weak));
+static void sync_shadow12(void) {
+    if (x6200_control_shadow_update == NULL || g_proxy == NULL) return;
+    uint32_t v = 0;
+    if (route_proxy_get_reg12(g_proxy, &v) == ROUTE_ERR_OK) x6200_control_shadow_update(12, v);
+}
 
 #ifdef ROUTE_LIB_PROXY_TEST
 /* En tests, los "originales" son stubs inyectados (sin dlsym). */
@@ -103,7 +116,7 @@ void x6200_control_record_set(bool on) {
     if (!active()) { ORIG_RECORD_BOOL(on); return; }
     note(route_proxy_record_set(g_proxy, on));  /* OWNERSHIP: nunca toca 0x8 */
 }
-void x6200_control_ptt_set(bool on) { if (!active()) { ORIG_PTT_BOOL(on); return; } note(route_proxy_ptt_set(g_proxy, on)); }
+void x6200_control_ptt_set(bool on) { if (!active()) { ORIG_PTT_BOOL(on); return; } route_err_t e = route_proxy_ptt_set(g_proxy, on); note(e); if (e == ROUTE_ERR_OK) sync_shadow12(); }
 void x6200_control_atu_tune(bool on) {
     if (!active()) { ORIG_ATU_TUNE_BOOL(on); return; }
     note(route_proxy_atu_tune(g_proxy, on));
@@ -128,23 +141,31 @@ bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg) {
         if ((arg & ROUTE_REG_VOICE_REC) != 0) { g_last_err = ROUTE_ERR_OWNERSHIP; return false; }
         route_err_t e = route_proxy_write_reg12(g_proxy, arg);
         note(e);
+        if (e == ROUTE_ERR_OK) sync_shadow12();
         return e == ROUTE_ERR_OK;
     }
     return ORIG_CMD_BOOL((int)cmd, arg);
 }
 void x6200_control_idle(void) {
     if (!active()) { ORIG_IDLE_VOID(); return; }
-    /* Snapshot del bloque completo vía API pública del SDK (sin escribir). */
-    route_snapshot_t snap;
-    route_snapshot_getter_t get = (route_snapshot_getter_t)dlsym(RTLD_DEFAULT, "x6200_control_get");
+#ifdef X6200_CTRL_HAVE_BULK_WRITE
+    /* Sombra autoritativa: libaether recibe sync_shadow12() tras cada escritura
+     * proxied; el bloque se envía por el árbitro (bulk 218 B). */
+    typedef uint32_t (*real_get_t)(int cmd);
+    real_get_t get = (real_get_t)dlsym(RTLD_DEFAULT, "x6200_control_get");
     if (get != NULL) {
-        (void)route_snapshot_capture(&snap, get, NULL, 1, 1, 0, ROUTE_REFRESH_LEASE_MS);
-        if (!route_snapshot_authoritative(&snap, get, NULL, 0, 1)) {
-            g_last_err = ROUTE_ERR_UNSUPPORTED;  /* snapshot no autoritativo/proxy divergente */
-            return;
-        }
+        route_snapshot_t snap;
+        memset(&snap, 0, sizeof(snap));
+        for (unsigned i = 0; i < ROUTE_SNAPSHOT_REGS; i++) snap.regs[i] = get((int)i);
+        snap.valid = true;
+        route_err_t e = route_proxy_refresh_block(g_proxy, snap.regs);
+        note(e);
+        return;
     }
-    /* Refresco DESHABILITADO: falta transporte bulk-write/verificación física. No escribe. */
     g_last_err = ROUTE_ERR_UNSUPPORTED;
+#else
+    /* Sin API bulk parcheada: no se reescribe directo ni se hacen 54 writes. */
+    g_last_err = ROUTE_ERR_UNSUPPORTED;
+#endif
 }
 #endif

@@ -197,14 +197,11 @@ route_err_t route_arbiter_refresh(route_arbiter_t *a, const uint32_t block[ROUTE
     uint32_t regs[ROUTE_SNAPSHOT_REGS];
     memcpy(regs, block, sizeof(regs));
     bool route_on = (a->state == ROUTE_STATE_RX_LINUX);
-    if (!route_on) {
-        /* si hay bits TX en el snapshot, deben venir de TX_PREPARE (estado no RX) */
-        if ((a->state != ROUTE_STATE_DEGRADED_BASE) && (regs[12] & ROUTE_TX_ACTIVITY_MASK)) {
-            a->stats.denied++; return ROUTE_ERR_TX_ACTIVE;
-        }
-    } else {
+    if (route_on) {
         regs[12] &= ~ROUTE_TX_ACTIVITY_MASK;   /* ruta activa: jamás TX por refresh */
     }
+    /* Fuera de RX_LINUX, los bits TX/ATU del bloque son legítimos (GUI/servicio);
+     * el orden TX_PREPARE ya fue aplicado por las escrituras proxied. */
     /* merge: voice_rec lo decide el arbitro, no el bloque de la GUI */
     if (route_on) regs[12] |= ROUTE_REG_VOICE_REC; else regs[12] &= ~ROUTE_REG_VOICE_REC;
     uint8_t wire[ROUTE_SNAPSHOT_BYTES];
