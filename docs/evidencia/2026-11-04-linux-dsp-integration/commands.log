@@ -69,3 +69,17 @@ python3 asf/scripts/risk.py x6200 --files <29 archivos> -> exit 0
 Nota honesta: **no se declara PASS** de build de imagen/QEMU-harness/contrato/fisico. check-matrix exit 1
 es entorno preexistente; los gates de codigo del modulo pasan via `run_tests.sh` host+ARM+QEMU.
 La feature esta DEFAULT OFF y no se instala/arranca.
+
+## 6. Validacion wiring (commit 609ec0f9)
+
+```
+git diff --check 681074e0 HEAD                    -> exit 0
+tests/linux-dsp-integration/run_tests.sh          -> 208 + 29 = 237 comprobaciones, 0 fallos
+  ARM route_service.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails; QEMU=PASS
+check-matrix -> exit 1 por ENTORNO (6 FAIL uv cache read-only / lvgl no inicializado / banco QEMU
+  BLOCKED); no por el codigo. `bash -n tests/.../run_tests.sh` -> ok
+risk.py --files -> exit 0; risk=high (src/CMake/daemon; feature DEFAULT OFF, no produccion)
+```
+
+Estado: wiring compilable/tested; RX_LINUX **bloqueado** porque el proxy completo de libaether no
+esta cableado; build GUI feature-ON no verificado en este entorno (SKIP honesto). Sin fisico.
