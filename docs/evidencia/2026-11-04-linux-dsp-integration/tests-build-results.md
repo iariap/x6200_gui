@@ -12,7 +12,9 @@ tests/linux-dsp-integration/run_tests.sh
 -> 53 comprobaciones, 0 fallos    (call-sites interpuestos: delegación OFF, reg12 sólo proxy,
                                    record OWNERSHIP, host_cmd ATU directo, idle suprimido +
                                    ROUTE_ERR_UNSUPPORTED, 20 PTT concurrentes, timeout sin original)
-   total 378 comprobaciones, 0 fallos
+-> 24 comprobaciones, 0 fallos    (snapshot all_cmd: captura 54 regs, wire 218 B, lease/versión,
+                                   divergencia reg12 no autoritativa, no muta SDK)
+   total 402 comprobaciones, 0 fallos
 ```
 Cubre (208): boot/base sin auto-enable, boot bus-fail⇒FAULT, enable precondiciones, heartbeat write_ok,
 TX/ATU disable-first y bus-fail, ownership/token/PID/STALE, apply_shared sin voice_rec, lease restore
@@ -55,11 +57,13 @@ toolchain ARM directamente, que es la evidencia usada.
 - **Feature ON configure completo**: con lvgl submodule inicializado (`git submodule update --init lvgl`,
   OK) y `PKG_CONFIG_PATH`/`PKG_CONFIG_SYSROOT_DIR` del sysroot ROM (busca `speexdsp 1.2.1`, libpulse,
   ALSA, libdrm, etc.) **`cmake -DX6200_LINUX_DSP_ROUTE=ON` COMPLETA** (configure+generate OK).
-- **Compilar la GUI/servicio feature ON no completado**: el árbol aplica flags ARM (`-mfpu=neon-vfpv4`)
-  con el `cc` host, y el cross-configure directo (`CMAKE_C_COMPILER=arm-buildroot-...-gcc`) falla antes
-  de generar (falta el entorno/toolchain file de Buildroot). **SKIP de entorno, no PASS**: capacidad
-  faltante = toolchain file/sysroot de Buildroot completo y deps host; no es error de los módulos
-  (que compilan host con stubs y ARM con el toolchain ROM individualmente).
+- **Build feature ON con toolchain Buildroot**: `CMAKE_TOOLCHAIN_FILE=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake`
+  + `PKG_CONFIG_PATH/SYSROOT_DIR` del sysroot ROM ⇒ configure OK y **`x6200_route_service` ARM EABI5 compila y linkea OK** (incluye adaptador de transporte con libaether del sysroot).
+- **GUI completa feature ON**: el target `x6200_gui` falla en `src/radio.c:65/69` por **static assertions
+  preexistentes de ABI** (`samples[512]`, `sizeof(x6200_flow_t)==552`) contra la versión de
+  X6200Control del sysroot disponible — mismatch repo/SDK del entorno, **no** de los módulos nuevos.
+  Registrado **SKIP de entorno, no PASS** (capacidad faltante: sysroot/SDK X6200Control compatible con
+  la base 681074e0; o actualizar el repo, fuera de esta tarea).
 
 ## Feature OFF / build normal
 

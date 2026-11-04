@@ -156,3 +156,17 @@ cmake -DX6200_LINUX_DSP_ROUTE=ON (lvgl + ROM sysroot pkgconfig) -> CONFIGURE/GEN
   build GUI/service feature ON -> SKIP entorno (flags ARM con cc host / falta toolchain file Buildroot)
 check-matrix/risk -> entorno preexistente / risk high (feature OFF); sin PASS fisico ni de build completa
 ```
+
+## 13. Snapshot/build stage (task-27)
+
+```
+# route_snapshot.[ch]: captura all_cmd via x6200_control_get (GETTER), wire 218B, lease/version/reg12 authority
+# idle wrapper: con proxy activo captura snapshot, valida autoridad, NO escribe, ROUTE_ERR_UNSUPPORTED
+# CMake service link: fallback find_library(aether_x6200_control) del sysroot
+tests/.../run_tests.sh -> 208+29+88+53+24 = 402 comprobaciones, 0 fallos; QEMU_SELF_CHECK=PASS; FEATURE_ON=RUN_OK
+TC=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake
+PKG_CONFIG_PATH/SYSROOT_DIR=ROM-sysroot cmake -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC -> configure OK
+cmake --build --target x6200_route_service -> ARM EABI5 OK (libaether del sysroot)
+cmake --build --target x6200_gui -> FAIL en src/radio.c:65/69 static assertions ABI preexistentes
+  (samples[512], sizeof flow 552) vs SDK del sysroot => SKIP entorno, no PASS
+```

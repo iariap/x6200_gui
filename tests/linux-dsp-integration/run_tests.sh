@@ -20,9 +20,12 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$OUT/test_proxy"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" -I"$HERE/stubs" \
     -DROUTE_LIB_PROXY_TEST -DX6200_LINUX_DSP_ROUTE=1 $COMMON \
-    "$SRC/route_proxy.c" "$SRC/route_libaether_proxy.c" \
+    "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$SRC/route_libaether_proxy.c" \
     "$HERE/test_callsites.c" -o "$OUT/test_callsites" -lpthread
 "$OUT/test_callsites"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" \
+    "$SRC/route_snapshot.c" "$HERE/test_snapshot.c" -o "$OUT/test_snapshot"
+"$OUT/test_snapshot"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \

@@ -2,7 +2,9 @@
  * En producción default OFF este archivo no se compila. */
 #ifdef X6200_LINUX_DSP_ROUTE
 #define _GNU_SOURCE
+#define ROUTE_REFRESH_LEASE_MS 1000u
 #include "route_libaether_proxy.h"
+#include "route_snapshot.h"
 #include <dlfcn.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -132,8 +134,17 @@ bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg) {
 }
 void x6200_control_idle(void) {
     if (!active()) { ORIG_IDLE_VOID(); return; }
-    /* Refresco periódico DESHABILITADO: sin bloque autoritativo de 54 regs no se
-     * puede refrescar de forma segura (ver idle-refresh-analysis.md). No escribe. */
+    /* Snapshot del bloque completo vía API pública del SDK (sin escribir). */
+    route_snapshot_t snap;
+    route_snapshot_getter_t get = (route_snapshot_getter_t)dlsym(RTLD_DEFAULT, "x6200_control_get");
+    if (get != NULL) {
+        (void)route_snapshot_capture(&snap, get, NULL, 1, 1, 0, ROUTE_REFRESH_LEASE_MS);
+        if (!route_snapshot_authoritative(&snap, get, NULL, 0, 1)) {
+            g_last_err = ROUTE_ERR_UNSUPPORTED;  /* snapshot no autoritativo/proxy divergente */
+            return;
+        }
+    }
+    /* Refresco DESHABILITADO: falta transporte bulk-write/verificación física. No escribe. */
     g_last_err = ROUTE_ERR_UNSUPPORTED;
 }
 #endif
