@@ -34,5 +34,21 @@ GUI vendor 1.0.6 vs 1.0.8: mismos símbolos/strings de filtros (logs/vendor-gui-
 python3 tools/native-dsp-rea/tests/test_register_mapping.py -> 9 tests OK (logs/qa19-tests.txt)
   valida mapeo/bitfields/defaults/negativos del SDK y GUI; NO valida algoritmo DSP (PENDING)
 
-## 6. Validación del PR (pendiente de correr sobre el commit documental)
-git diff --check ; check-matrix ; risk
+## 6. Validación del PR (sobre el commit documental 7a728e0c)
+
+```
+git diff --check 681074e0 HEAD                     -> exit 0 (sin whitespace)
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del diff: 2 gates con `uv` fallan por ~/.cache/uv read-only
+    ("Read-only file system (os error 30)") y check x6200-ab contracts queda BLOCKED exit 2;
+    `check_drawbuf_partial` falla porque el worktree nuevo no tiene el submódulo lvgl
+    inicializado (src/lvgl ausente).
+  - `[check] bash -n tools/native-dsp-rea/run.sh` -> ok ; resto [SKIP] por no tocar src/**.
+python3 asf/scripts/risk.py x6200 --files <29 archivos> -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"], auto_approve=false
+python3 tools/native-dsp-rea/tests/test_register_mapping.py -> 9 tests OK
+```
+
+Nota honesta: **no se declara PASS** de build/QEMU/contrato; el exit 1 de check-matrix es
+preexistente/entorno (uv cache read-only + submódulo lvgl ausente en este worktree). El diff es
+`docs/**` + `tools/native-dsp-rea/**`; no hay código de producción ni firmware.
