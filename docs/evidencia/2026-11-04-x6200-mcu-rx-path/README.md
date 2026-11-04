@@ -7,3 +7,4 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 - `qa38-spi3-i2s.md`: QA38 — SPI3=I2S3, DMA handles, buffers SRAM1, underruns UNKNOWN.
 - `scan.json`: escaneo literal de QA37; no prueba de ausencia de referencias calculadas.
 - `qa38-flow.json`: verificación de flujo I2SCFGR/DMA/buffers.
+- `qa39-i2s3-pipeline.md`: QA39 — DMAMUX confirmado; buffers RX/TX y formato aún UNKNOWN.
