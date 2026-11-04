@@ -299,3 +299,11 @@ DAC/HP on y aun así no hubo tono DAC. QA11b previo (bit0x40 presente) sí oyó 
 `H1_DAC_ROUTE_DISABLED=LIKELY`; `LINUX_PCM_PATH_FAULT=UNKNOWN`;
 `PREVIOUS_AUDIBLE_EVIDENCE=VALID` (QA11b, no QA33); `COMBINED_RX_DAC_ROUTE=UNPROVEN`.
 No hay nuevo firmware ni flash.
+
+
+## 31. Corrección QA36 y rollback preparado
+
+H1 **no** recuperó RX de captura: QA32 B=143,0 vs A=2160,7. `BASE_RX_PRESERVED_WITH_DAC=NO`
+también con H1. H1_DAC_ROUTE_DISABLED=LIKELY no confirmado. No hay modo combinado demostrado.
+Rollback oficial 1.0.8 preparado en `rollback-plan.md`, **no ejecutado**; requiere autorización
+específica para SHA `9a19f97a…`. Sin más pruebas de audio ni flasheos.

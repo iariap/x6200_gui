@@ -48,21 +48,21 @@ La prueba de tono en **BASE** tampoco debía sonar: QA11b ya demostró que BASE 
   ruta DAC, no un fallo ALSA.
 - **PREVIOUS_AUDIBLE_EVIDENCE = VALID** para QA11b (PCM en DAC), pero **no** para el QSO de QA33,
   que era RX nativo.
-- **COMBINED_RX_DAC_ROUTE = UNPROVEN**: H1 restaura RX de captura pero pierde DAC; el candidato
-  con bit `0x40` conserva DAC pero pierde captura RX. No hay evidencia de un modo combinado.
+- **BASE_RX_PRESERVED_WITH_DAC = NO también con H1**: QA32 midió B=143,0 frente a A=2160,7.
+  H1 **no recupera RX de captura**.
+- **H1_DAC_ROUTE_DISABLED = LIKELY, NO CONFIRMADO**: H1 quitó el bit y QA11b previo con el
+  bit presente sí tuvo DAC+TONE; pero QA35 usó ALSA directo, no la ruta GUI/PulseAudio.
+- **COMBINED_RX_DAC_ROUTE = UNPROVEN**: el candidato con bit `0x40` conserva DAC pero no RX
+  de captura; H1 no conserva RX y probablemente pierde DAC. Ninguno logra ambos.
 
-## 5. Próximo experimento mínimo (no ejecutado)
+## 5. Próximo paso: rollback, no otro experimento
 
-Para confirmar H1_DAC_ROUTE_DISABLED sin otro firmware:
+No se repetirán pruebas de audio ni se generará un tercer candidato sin un mecanismo nuevo.
+El siguiente paso recomendado es restaurar el firmware oficial 1.0.8 mediante el updater vendor,
+previa autorización específica. Ver `rollback-plan.md`.
 
-1. Mantener H1.
-2. Usar **la ruta de audio del GUI/PulseAudio** (no ALSA directo) con `audio_play_en`/stream
-   normal, reproduciendo el mismo tono y con `DAC Playback Switch=on`.
-3. Si el tono tampoco aparece, H1 deshabilitó DAC (LIKELY → CONFIRMED).
-4. Si aparece, el fallo era del setup ALSA directo.
-
-Riesgo: ninguno sobre el MCU; sólo audio. No se debe flashear nada. Un modo combinado
-RX+DAC requeriría identificar otro registro/bit o un modo del FPGA; no existe candidato.
+Un modo combinado RX+DAC requeriría identificar otro registro/bit o un modo del FPGA; no existe
+candidato fundamentado.
 
 ## 6. Estado
 
