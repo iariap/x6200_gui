@@ -39,6 +39,10 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$HERE/test_qa_enable.c" -o "$OUT/test_qa_enable" -lpthread
 "$OUT/test_qa_enable"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 -DROUTE_QA_TEST_NO_PULSE=1 -I"$SRC" $COMMON \
+    "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
+    "$SRC/route_qa_client.c" "$HERE/test_qa_sink.c" -o "$OUT/test_qa_sink" -lpthread
+"$OUT/test_qa_sink"
 "$OUT/test_snapshot"
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_proxy.c" "$SRC/route_snapshot.c" "$HERE/test_refresh.c" -o "$OUT/test_refresh" -lpthread
@@ -54,6 +58,10 @@ COMMON="$SRC/route_shadow.c $SRC/route_arbiter.c $SRC/route_ipc.c $SRC/route_sup
 "$CC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
     "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$HERE/test_qa_enable.c" -o "$OUT/test_qa_enable" -lpthread
 "$OUT/test_qa_enable"
+"$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 -DROUTE_QA_TEST_NO_PULSE=1 -I"$SRC" $COMMON \
+    "$SRC/route_client_worker.c" "$SRC/route_wiring.c" \
+    "$SRC/route_qa_client.c" "$HERE/test_qa_sink.c" -o "$OUT/test_qa_sink" -lpthread
+"$OUT/test_qa_sink"
 ARMCC=${ARMCC:-$ROOT/../rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc}
 if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -I"$SRC" $COMMON \
@@ -67,9 +75,9 @@ if [ -x "$ARMCC" ]; then
     "$ARMCC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
         -I"$SRC" -I"$HERE/stubs" -c "$SRC/route_libaether_proxy.c" -o "$OUT/route_libaether_proxy.arm.on.o"
     file "$OUT/route_libaether_proxy.arm.on.o"
-    "$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 \
+    "$CC" -std=c11 -O2 -Wall -Wextra -Werror -DX6200_LINUX_DSP_ROUTE=1 -DROUTE_QA_TEST_NO_PULSE=1 \
         -I"$SRC" -I"$HERE/stubs" $COMMON \
-        "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$SRC/route_hooks.c" \
+        "$SRC/route_client_worker.c" "$SRC/route_wiring.c" "$SRC/route_hooks.c" "$SRC/route_qa_client.c" \
         "$SRC/route_transport_x6200.c" "$SRC/route_proxy.c" "$SRC/route_service_main.c" \
         "$HERE/stubs/x6200_stub.c" -o "$OUT/route_service_feature_on" -lpthread
     "$OUT/route_service_feature_on" --self-check && echo "FEATURE_ON_BUILD=RUN_OK"

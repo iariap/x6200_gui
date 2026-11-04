@@ -147,12 +147,15 @@ int route_ipc_client_attach(route_ipc_client_t *c, int fd, const uint8_t token[R
     memset(c, 0, sizeof(*c)); c->fd = fd;
     memcpy(c->token, token, ROUTE_IPC_TOKEN_LEN);
     c->pid = 0x6200; c->starttime = 0x1234;
+    pthread_mutex_init(&c->mu, NULL);
     return 0;
 }
 
 int route_ipc_client_request(route_ipc_client_t *c, uint32_t type, uint32_t value, uint32_t lease_ms,
                              uint64_t now_ms, route_ipc_msg_t *resp, int timeout_ms) {
     if (c == NULL || c->fd < 0 || resp == NULL) return -1;
+    pthread_mutex_lock(&c->mu);
+    int rc = -1;
     route_ipc_msg_t req;
     memset(&req, 0, sizeof(req));
     req.magic = ROUTE_IPC_MAGIC; req.version = ROUTE_IPC_VERSION; req.type = type;
@@ -160,20 +163,24 @@ int route_ipc_client_request(route_ipc_client_t *c, uint32_t type, uint32_t valu
     req.pid = c->pid; req.starttime = c->starttime; req.mono_ms = now_ms;
     req.value = value; req.lease_ms = lease_ms; req.seq = ++c->seq;
     uint8_t buf[sizeof(req)];
-    if (route_ipc_encode(&req, buf, sizeof(buf)) != sizeof(req)) return -1;
-    if (send(c->fd, buf, sizeof(req), 0) != (ssize_t)sizeof(req)) return -1;
+    if (route_ipc_encode(&req, buf, sizeof(buf)) != sizeof(req)) { pthread_mutex_unlock(&c->mu); return -1; }
+    if (send(c->fd, buf, sizeof(req), 0) != (ssize_t)sizeof(req)) { pthread_mutex_unlock(&c->mu); return -1; }
     struct pollfd p = { .fd = c->fd, .events = POLLIN };
     int pr = poll(&p, 1, timeout_ms);
-    if (pr <= 0) return (pr == 0) ? -2 : -1;   /* timeout explícito: nunca indefinido */
-    ssize_t n = recv(c->fd, resp, sizeof(*resp), 0);
-    if (n <= 0) return -1;
-    if (route_ipc_decode(resp, (size_t)n, resp) != 0) return -1;
-    return 0;
+    if (pr == 0) rc = -2;   /* timeout explícito: nunca indefinido */
+    else if (pr > 0) {
+        ssize_t n = recv(c->fd, resp, sizeof(*resp), 0);
+        if (n > 0 && route_ipc_decode(resp, (size_t)n, resp) == 0) rc = 0;
+    }
+    pthread_mutex_unlock(&c->mu);
+    return rc;
 }
 
 int route_ipc_client_refresh(route_ipc_client_t *c, const uint32_t regs[ROUTE_SNAPSHOT_REGS],
                              uint64_t now_ms, route_ipc_msg_t *resp, int timeout_ms) {
     if (c == NULL || c->fd < 0 || regs == NULL || resp == NULL) return -1;
+    pthread_mutex_lock(&c->mu);
+    int rc = -1;
     route_ipc_msg_t req;
     memset(&req, 0, sizeof(req));
     req.magic = ROUTE_IPC_MAGIC; req.version = ROUTE_IPC_VERSION; req.type = ROUTE_IPC_REQ_REFRESH;
@@ -181,12 +188,12 @@ int route_ipc_client_refresh(route_ipc_client_t *c, const uint32_t regs[ROUTE_SN
     req.pid = c->pid; req.starttime = c->starttime; req.mono_ms = now_ms; req.seq = ++c->seq;
     memcpy(req.block, regs, sizeof(req.block));
     uint8_t buf[sizeof(req)];
-    if (route_ipc_encode(&req, buf, sizeof(buf)) != sizeof(req)) return -1;
-    if (send(c->fd, buf, sizeof(req), 0) != (ssize_t)sizeof(req)) return -1;
+    if (route_ipc_encode(&req, buf, sizeof(buf)) != sizeof(req)) { pthread_mutex_unlock(&c->mu); return -1; }
+    if (send(c->fd, buf, sizeof(req), 0) != (ssize_t)sizeof(req)) { pthread_mutex_unlock(&c->mu); return -1; }
     struct pollfd p = { .fd = c->fd, .events = POLLIN };
     int pr = poll(&p, 1, timeout_ms);
-    if (pr <= 0) return (pr == 0) ? -2 : -1;
-    ssize_t n = recv(c->fd, resp, sizeof(*resp), 0);
-    if (n <= 0) return -1;
-    return route_ipc_decode(resp, (size_t)n, resp) == 0 ? 0 : -1;
+    if (pr == 0) rc = -2;
+    else if (pr > 0 && recv(c->fd, resp, sizeof(*resp), 0) > 0 && route_ipc_decode(resp, sizeof(*resp), resp) == 0) rc = 0;
+    pthread_mutex_unlock(&c->mu);
+    return rc;
 }

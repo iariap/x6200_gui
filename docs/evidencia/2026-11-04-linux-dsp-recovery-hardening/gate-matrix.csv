@@ -12,4 +12,5 @@ RESTORE_250MS_OFFLINE,PASS,offline,test_hardening/supervisor,contrato lógico; n
 MUX_PHYSICAL_STATE_VERIFICATION,BLOCKED,physical,sin readback MCU (R' #370),requiere instrumentación/autorización
 RESTORE_250MS_PHYSICAL,BLOCKED/PENDING,physical,no ejecutado,protocolo físico
 PCM_TO_SPEAKER_PHYSICAL,PENDING,physical,no ejecutado,protocolo físico
-PRODUCTION_READY,FAIL,physical+integration,matriz,prohibido PASS sin físico
+PRODUCTION_READY,FAIL,physical+integration,matriz,prohibido PASS sin físico; sink listo para QA física
+QA_SINK_INJECTION,PASS,offline,test_qa_sink (38 checks) + audio hook,PulseAudio sink inyectado; sin hardware

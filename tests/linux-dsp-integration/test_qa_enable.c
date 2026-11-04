@@ -83,6 +83,7 @@ static void test_valid_activation(void) {
     CHECK(e.b.writes >= 2);   /* boot + enable (un solo writer: árbitro) */
     CHECK((e.b.log[e.b.writes-1] & ROUTE_REG_VOICE_REC) != 0);
     CHECK(route_wiring_set_rx_enabled(e.w, false) == ROUTE_ERR_OK);
+    for (int i = 0; i < 100 && route_arbiter_state(e.a) == ROUTE_STATE_RX_LINUX; i++) usleep(2000);
     CHECK(route_arbiter_state(e.a) == ROUTE_STATE_BASE);
     unsetenv("X6200_LINUX_DSP_ROUTE_QA");
     CHECK(route_wiring_set_rx_enabled(e.w, true) == ROUTE_ERR_NOT_READY);

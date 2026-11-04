@@ -99,7 +99,9 @@ jpeg
 # -DX6200_LINUX_DSP_ROUTE=ON se compilan los hooks en la GUI.
 if(X6200_LINUX_DSP_ROUTE)
     target_sources(${PROJECT_NAME} PRIVATE linux_dsp_route/route_hooks.c
-                                              linux_dsp_route/route_libaether_proxy.c)
+                                              linux_dsp_route/route_libaether_proxy.c
+                                              linux_dsp_route/route_qa_client.c
+                                              linux_dsp_route/route_pulse_sink.c)
     target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_LINUX_DSP_ROUTE=1)
     if(X6200_CTRL_HAVE_BULK_WRITE)
         target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_CTRL_HAVE_BULK_WRITE=1)

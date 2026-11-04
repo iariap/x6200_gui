@@ -12,3 +12,11 @@
 - tests: 771 comprobaciones, 0 fallos (incluye test_qa_enable 27); FEATURE_ON=RUN_OK; QEMU=PASS
 - reproducible-build.sh (lvgl submodule inicializado) -> REPRO_RC=0 PASS; feature-ON GUI+servicio ARM OK; OFF BASE OK; paquete QA sin deploy
 - logs: logs-tests.log, logs-repro-build.log
+
+## task-33 sink hook
+- route_pulse_sink.[ch] (PulseAudio simple, worker-only) + route_qa_client.[ch] (gate/init/IPC/token/activación opt-in)
+- audio.c audio_init() -> x6200_route_audio_init() bajo feature; capture_deliver mismo buffer post-Speex
+- IPC client serializado con mutex (worker + hilo QA); cmake GUI sources añadidas
+- tests: 847 comprobaciones, 0 fallos (test_qa_sink 38); FEATURE_ON=RUN_OK; QEMU=PASS
+- reproducible-build.sh -> REPRO_RC=0 PASS (GUI+servicio ARM EABI5 con sink, OFF BASE, paquete QA)
+- logs: logs-tests.log, logs-repro-build.log

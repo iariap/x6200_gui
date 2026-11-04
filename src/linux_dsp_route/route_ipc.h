@@ -1,6 +1,7 @@
 #pragma once
 #include "route_common.h"
 #include "route_arbiter.h"
+#include <pthread.h>
 
 #define ROUTE_IPC_MAGIC   0x52584450u  /* 'RXDP' */
 #define ROUTE_IPC_VERSION 1u
@@ -53,6 +54,7 @@ typedef struct {
     uint8_t token[ROUTE_IPC_TOKEN_LEN];
     uint32_t pid, starttime;
     uint32_t seq;
+    pthread_mutex_t mu;   /* serializa worker/hilo QA sobre el mismo cliente */
 } route_ipc_client_t;
 
 int route_ipc_client_attach(route_ipc_client_t *c, int fd, const uint8_t token[ROUTE_IPC_TOKEN_LEN]);

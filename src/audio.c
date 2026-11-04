@@ -22,6 +22,7 @@
 #include "audio.h"
 #ifdef X6200_LINUX_DSP_ROUTE
 #include "linux_dsp_route/route_hooks.h"
+
 #endif
 #include "meter.h"
 #include "dsp.h"
@@ -205,6 +206,11 @@ static void *audio_init_thread(void *arg) {
 
 void audio_init() {
     pthread_t t;
+
+#ifdef X6200_LINUX_DSP_ROUTE
+    /* QA: crea wiring/sink/IPC antes de capturar; default OFF, falla cerrado. */
+    x6200_route_audio_init();
+#endif
 
     /* La cadena de capture filters se inicializa ACA, de forma SINCRONA y una sola vez,
      * ANTES de lanzar el hilo de PulseAudio: antes vivia dentro de audio_init_sync() y
