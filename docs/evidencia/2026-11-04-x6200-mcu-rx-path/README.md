@@ -17,3 +17,7 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 
 - `qa43-audio-processor-endpoint.md`: QA43 — FCC photos, pines I2S3 verificados, endpoint/codec UNKNOWN; UNRESOLVED.
 - `qa43/`: PDF FCC 7396922 + imágenes de páginas 5/6 (evidencia pública).
+
+- `qa44-ghidra-dataflow.md`: QA44 — Ghidra 12.2; RX 0x30000000 consumido por FFT/análisis; TX productor UNRESOLVED; DSP no listo.
+- `qa44-key-decomp.txt`: descompilación clave de Ghidra.
+- `tools/ghidra/`: scripts de importación, memoria y descompilación.
