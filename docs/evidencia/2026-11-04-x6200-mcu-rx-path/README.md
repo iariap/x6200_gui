@@ -8,3 +8,5 @@ Evidencia previa preservada en la rama `archive/pr388-qa37-full`.
 - `scan.json`: escaneo literal de QA37; no prueba de ausencia de referencias calculadas.
 - `qa38-flow.json`: verificación de flujo I2SCFGR/DMA/buffers.
 - `qa39-i2s3-pipeline.md`: QA39 — DMA RX/TX confirmado; RX=0x30000000, TX=0x30000C00; formato/tasa UNKNOWN.
+
+- `qa40-dma-sizes-processing.md`: QA40 — DMA 32/16 bits, longitudes en unidades; consumidor/productor no encontrados.

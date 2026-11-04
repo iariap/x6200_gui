@@ -3,6 +3,11 @@
 Fecha: 2026-11-04. Offline; sin radio, sin flash, sin TX. Rama aislada desde `main`.
 QA37/QA38 se conservan; este documento los sigue y corrige su punto abierto.
 
+
+
+> **Corrección QA40:** `0x300`/`0x600` son **unidades de dato**, no bytes. Con PSIZE/MSIZE
+> 32-bit RX y 16-bit TX, ambas transferencias ocupan **0xC00 B**. Ver `qa40-dma-sizes-processing.md`.
+
 ## 1. DMAMUX: confirmado
 
 En `0x08021AAC`:
