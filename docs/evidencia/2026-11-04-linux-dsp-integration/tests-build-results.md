@@ -76,3 +76,22 @@ sysroot/lvgl/buildroot); se registra como SKIP honesto, no como PASS.
 
 Ningún PASS físico. `SPEAKER_LINUX_AUDIO_PHYSICAL=PENDING`, `RESTORE_250MS_PHYSICAL=BLOCKED/PENDING`,
 `MUX_PHYSICAL_STATE_VERIFICATION=BLOCKED`.
+
+## Feature-ON build completo GUI+servicio (task-28, resuelto)
+
+Con toolchain Buildroot + headers del checkout de X6200Control que usa la base:
+
+```
+TC=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake
+REFS=refs/X6200Control/include   # headers ABI correctos (samples[512], flow 552)
+PKG_CONFIG_PATH=.../sysroot/usr/lib/pkgconfig PKG_CONFIG_SYSROOT_DIR=.../sysroot \
+cmake -S . -B cmake-refs -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC \
+      -DCMAKE_C_FLAGS="-I$REFS" -DCMAKE_CXX_FLAGS="-I$REFS"
+cmake --build cmake-refs --target x6200_gui -j8        -> [100%] Built target x6200_gui (ARM EABI5)
+cmake --build cmake-refs --target x6200_route_service  -> [100%] Built target x6200_route_service (ARM EABI5)
+```
+
+El mismatch ABI de task-27 era por headers del sysroot vs headers del repo; usando `refs/X6200Control/include`
+la GUI feature ON compila/linkea. Logs en `logs/build-feature-on-gui-arm.log` y
+`logs/cmake-feature-on-toolchain-refs-configure.log`. Dependencia exacta: checkout de X6200Control
+(0.15.3) cuyo `flow.h` tenga `samples[512]`/552 B; sin él, sysroot del entorno no coincide.

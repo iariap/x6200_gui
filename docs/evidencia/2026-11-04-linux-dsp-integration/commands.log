@@ -184,3 +184,13 @@ tests -> 208+29+88+53+47+24+47 = 496 comprobaciones, 0 fallos; FEATURE_ON=RUN_OK
 #   configure OK; service ARM OK; GUI falla static assertions ABI radio.c:65/69 (samples[512]/flow 552)
 #   contra libaether/X6200Control 0.15.3 del sysroot => mismatch repo/SDK, SKIP entorno (no PASS)
 ```
+
+## 15. Full feature-ON build resuelto (task-28)
+
+```
+TC=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake
+REFS=refs/X6200Control/include
+cmake -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC -DCMAKE_C_FLAGS=-I$REFS ... -> OK
+cmake --build --target x6200_gui -j8 -> [100%] Built target x6200_gui (ARM EABI5)
+cmake --build --target x6200_route_service -> [100%] Built target x6200_route_service (ARM EABI5)
+```
