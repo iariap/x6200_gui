@@ -2,6 +2,13 @@
 """Paquete A/B ciego C/D1/D2/bypass, orden aleatorio + answer key + planilla. Sin operador: PENDING."""
 import argparse, csv, os, random, wave, numpy as np
 MODES=['B','C','D1','D2']
+DELAY=882  # 20 ms @44.1 kHz: latencia medida de SpeexDSP (B es bypass, delay 0)
+
+def align(x, delay):
+    if delay <= 0: return x
+    y=np.zeros_like(x)
+    y[:max(0,len(x)-delay)] = x[delay:]
+    return y
 def read16(p):
     w=wave.open(p,'rb'); x=np.frombuffer(w.readframes(w.getnframes()),dtype='<i2').astype(np.float64); w.close(); return x
 def write16(p,x):
@@ -16,7 +23,7 @@ def main():
         if m['kind']!='degraded' or m['condition'] not in ('white_noise','adjacent_qrm','level_steps'): continue
         outs={mode:os.path.join(a.out,'processed',mode,m['id']+'.wav') for mode in MODES}
         if not all(os.path.exists(p) for p in outs.values()): continue
-        raw={mode:read16(outs[mode]) for mode in MODES}
+        raw={mode:align(read16(outs[mode]), 0 if mode=='B' else DELAY) for mode in MODES}
         # Nivel perceptual: objetivo = mínimo RMS de los candidatos => ninguno se amplifica/clipea;
         # mismo factor aplicado por muestra y documentado (no oculta pumping/NR, sólo iguala nivel).
         target=min(float(np.sqrt(np.mean(x*x))) for x in raw.values()) or 1.0
