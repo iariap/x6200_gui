@@ -71,7 +71,10 @@
       "reason": "Tests nativos/estaticos y gates del arnes"
     },
     {
-      "pattern": ".factory/**",
+      "pattern": ".asf/**",
+      "except": [
+        ".asf/specs/*.md"
+      ],
       "risk": "medium",
       "reason": "Metadata/policy de la app en su repo: cambio de gobernanza, nunca low"
     },
