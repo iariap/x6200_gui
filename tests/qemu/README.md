@@ -37,7 +37,7 @@ arrancar (`aislamiento()`):
 | `CONT` | `x6200-next222-qemu` | contenedor propio (tiene que empezar con `x6200-` y no ser uno compartido). |
 | `VOL` | `x6200-next222-build` | volumen de build propio (nunca `x6200-build-output`). |
 | `IMAGEN` | `x6200-buildroot` | la imagen de build del repo (la misma del CI/arnés). |
-| `BUILDROOT` | — | clon privado de Buildroot, solo si hay que construir (`CONSTRUIR=si`). |
+| `BUILDROOT` | `tools/x6200-env.sh` | arbol de Buildroot, solo si hay que construir (`CONSTRUIR=si`); por defecto el que resuelve el entorno comun (cache por usuario o hermanos del checkout base). |
 | `ROOTFS` | — | `rootfs.tar` privada, si no se quiere armar el chroot desde `$VOL/target`. |
 | `RONDAS` / `DWELL` | `3` / `2` | rondas del barrido y permanencia por app, en segundos. |
 

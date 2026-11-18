@@ -22,7 +22,7 @@
 set -e
 AQUI=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO=$(CDPATH= cd -- "$AQUI/.." && pwd)
-BUILDROOT=${BUILDROOT:-$REPO/../buildroot_new/AetherX6200Buildroot}
+. "$AQUI/x6200-env.sh"                       # BUILDROOT y X6200_CACHE_DIR (un solo lugar)
 VOLUMEN=${VOLUMEN:-x6200-build-output}
 IMAGEN=${IMAGEN:-x6200-buildroot}
 JOBS=${1:-$(nproc)}
@@ -38,6 +38,7 @@ SUCIO=$(git -C "$REPO" status --porcelain -- src lvgl/src 2>/dev/null | head -1)
 if [ "${RECONSTRUIR:-si}" = "auto" ] && [ "$HASH" = "$ANTERIOR" ] && [ -z "$SUCIO" ]; then
     echo "  sin cambios en los fuentes: se deja el binario que ya esta"
 else
+    x6200_requiere_buildroot || exit 2
     echo "  compilando limpio (objetos de la GUI borrados)..."
     # `-e X6200_FUENTE_MD5`: el binario lo embebe como sello (ver CMakeLists.txt y src/main.c).
     docker run --rm --entrypoint "" \

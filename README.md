@@ -84,6 +84,12 @@ cd buildroot
 ./build.sh
 ```
 
+El árbol de Buildroot lo resuelve `tools/x6200-env.sh` (lo usan `buildroot/build.sh`,
+`tools/compila-gui.sh` y el banco): `BUILDROOT` si está exportado; si no, el clon (o symlink) en
+`${XDG_CACHE_HOME:-~/.cache}/x6200/AetherX6200Buildroot` (`X6200_CACHE_DIR`), y como compatibilidad
+los hermanos `AetherX6200Buildroot/` o `buildroot_new/AetherX6200Buildroot/` del checkout base. Da lo
+mismo desde el checkout base que desde un worktree: nada pesado del build vive dentro del worktree.
+
 Los tests (todo lo que se puede probar sin la radio) se corren con `tests/run_all_tests.sh`; ver
 [`docs/TESTING.md`](docs/TESTING.md).
 
