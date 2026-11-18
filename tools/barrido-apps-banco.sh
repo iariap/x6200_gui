@@ -39,7 +39,7 @@ REINTENTAR=${REINTENTAR:-si}
 CHROOT=${CHROOT:-$REPO/../.vfix3}
 IMAGEN=${IMAGEN:-x6200-buildroot}
 VOLUMEN=${VOLUMEN:-x6200-build-output}
-BUILDROOT=${BUILDROOT:-$REPO/../buildroot_new/AetherX6200Buildroot}
+. "$AQUI/x6200-env.sh"                  # BUILDROOT y X6200_CACHE_DIR (un solo lugar)
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
 RECONSTRUIR=${RECONSTRUIR:-auto}
 # Las 24 apps del menu (src/remote_server.cpp app_names[] sin "off"): las 23 apps con boton en las

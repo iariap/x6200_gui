@@ -17,6 +17,9 @@ Permite ver y comandar el firmware **real** (el binario ARM de la imagen) en la 
 ## Requisitos
 
 - `docker`, con la imagen `x6200-buildroot` y el volumen `x6200-build-output` (los del build comun).
+- Para reconstruir, el arbol de AetherX6200Buildroot: lo resuelve `tools/x6200-env.sh` (`BUILDROOT`
+  exportado, o `${X6200_CACHE_DIR:-~/.cache/x6200}/AetherX6200Buildroot`, o los hermanos del checkout
+  base). Mismo resultado desde el checkout base o un worktree.
 - Un **chroot del rootfs** ya extraido (`CHROOT`, por defecto `../.vfix3`). Si no existe, se arma
   extrayendo el rootfs de la imagen (ver `docs/TESTING.md`, nivel 4).
 - `qemu-arm-static` utilizable por el contenedor (binfmt_misc).

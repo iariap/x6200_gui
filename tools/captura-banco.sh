@@ -46,7 +46,7 @@ ORDEN=${2:-}
 CHROOT=${CHROOT:-$REPO/../.vfix3}
 VOLUMEN=${VOLUMEN:-x6200-build-output}
 IMAGEN=${IMAGEN:-x6200-buildroot}
-BUILDROOT=${BUILDROOT:-$REPO/../buildroot_new/AetherX6200Buildroot}
+. "$AQUI/x6200-env.sh"                  # BUILDROOT y X6200_CACHE_DIR (un solo lugar)
 ESPERA=${ESPERA:-6}
 RECONSTRUIR=${RECONSTRUIR:-auto}
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
@@ -79,7 +79,7 @@ command -v python3 >/dev/null       && nota "python3: ok"                 || fal
 python3 -c "import PIL" 2>/dev/null && nota "PIL: ok"                     || falta "falta Pillow (pip install pillow)"
 [ -f "$AQUI/remote/x6200-remote" ]  && nota "cliente de control: ok"      || falta "falta $AQUI/remote/x6200-remote (compilar con $AQUI/remote/compila.sh)"
 if [ "$RECONSTRUIR" != "no" ]; then
-    [ -d "$BUILDROOT" ] && nota "buildroot: ok" || nota "aviso: sin $BUILDROOT no se puede reconstruir (RECONSTRUIR=no para saltearlo)"
+    [ -n "$BUILDROOT" ] && [ -d "$BUILDROOT" ] && nota "buildroot: ok ($BUILDROOT)" || nota "aviso: sin arbol de Buildroot no se puede reconstruir (RECONSTRUIR=no para saltearlo)"
 fi
 BENCH_FALTA=
 for l in libfakefb.so libcrash.so libx6200trace.so; do [ -f "$AQUI/bench/$l" ] || BENCH_FALTA="$BENCH_FALTA $l"; done
@@ -149,7 +149,7 @@ make_gui() {
 }
 
 if [ -n "$MOTIVO" ] && [ "$RECONSTRUIR" != "no" ]; then
-    [ -d "$BUILDROOT" ] || fallar "hay que reconstruir ($MOTIVO) y no esta $BUILDROOT (usar RECONSTRUIR=no para probar el binario que ya esta)"
+    x6200_requiere_buildroot || fallar "hay que reconstruir ($MOTIVO) y no hay arbol de Buildroot (usar RECONSTRUIR=no para probar el binario que ya esta)"
     # dirclean SIEMPRE en este camino: el rebuild compila en una copia propia del repo y su mtime no
     # es confiable (hallazgo #65: el check-matrix daba ok con un binario viejo), asi que no se reusa
     # nada. Borra la copia y los .o del GUI y el rebuild los rehace del arbol fuente. Cuesta un

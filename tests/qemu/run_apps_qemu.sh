@@ -45,7 +45,7 @@ SALIDA=${SALIDA:-$LAB/out}
 CONT=${CONT:-x6200-next222-qemu}
 VOL=${VOL:-x6200-next222-build}
 IMAGEN=${IMAGEN:-x6200-buildroot}
-BUILDROOT=${BUILDROOT:-}
+REPO=$WT . "$WT/tools/x6200-env.sh"     # BUILDROOT y X6200_CACHE_DIR (un solo lugar)
 ROOTFS=${ROOTFS:-}
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
 RONDAS=${RONDAS:-3}
@@ -186,7 +186,7 @@ construir_volumen() {
         nota "volumen $VOL: ya tiene el árbol de Buildroot configurado (no se reconstruye)"
         return 0
     fi
-    [ -n "$BUILDROOT" ] && [ -d "$BUILDROOT" ] || fallar "CONSTRUIR=si necesita BUILDROOT=<clon de Buildroot>"
+    x6200_requiere_buildroot || fallar "CONSTRUIR=si necesita el arbol de Buildroot"
     echo "== configurando y construyendo Buildroot en el volumen privado $VOL (camino largo) ==" >&2
     docker run --rm --entrypoint "" \
         -v "$BUILDROOT":/workspace -v "$VOL":/workspace/build \
