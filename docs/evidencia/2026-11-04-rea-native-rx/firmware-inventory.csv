@@ -1,0 +1,13 @@
+artifact,purpose,real_path,bytes,sha256,provenance,label
+mcU_xgf_108,MCU BASE firmware 1.0.8,fw108-scratch/ext108/fs108/x6200_mcu_20260820141208.xgf,524288,9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23,Extraído del paquete oficial 1.0.8 (fs108) /usr/firmware/,VERIFIED
+mcU_dec_108,MCU 1.0.8 descifrado para REA,fw108-scratch/x6200-base-rea/x6200-108.dec.bin,524288,c3f7d028bc63e43fbb478a09e1032d46059b71efe217a60b576231866fbc2c0a,Descifrado en host (QA37–44; hash coincide con QA44),VERIFIED
+mcU_xgf_106,MCU BASE firmware 1.0.6,fw108-scratch/ref106/fs106/x6200_mcu_20250111134652.xgf,524288,dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3,Paquete 1.0.6 preservado,VERIFIED
+mcU_dec_106,MCU 1.0.6 descifrado,fw108-scratch/x6200-base-rea/x6200-106.dec.bin,524288,1b7606b657a89d011682ea6f41a84a910d76ab5fe5526f82f5dc54d86cc18685,Descifrado en host; comparación de versiones,VERIFIED
+factory_emmc,Imagen eMMC completa de fábrica (rootfs ext4),fw108-scratch/ext108/parts/1.img,419430400,3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764,Particiones del paquete oficial 1.0.8 (ext108); fecha FS 2026-08-20,VERIFIED
+image_sd_108,Imagen SD 1.0.8 (build compat #377),fw108-scratch/fw108-image-377/sdcard.img,571473920,7ec5d8cc4cb6cbf98fc92af9cf6489ad1a94f5dce8585d43c93156afde68b5d9,manifiesto fw108-image-377 (issue #377),VERIFIED
+rootfs_tar_108,Rootfs 1.0.8,fw108-scratch/fw108-image-377/rootfs.tar,244336640,a2eb1d6582e766a38df0ea7db9b49e958063713d6dd10d7cb96d0621215d171e,manifiesto fw108-image-377,VERIFIED
+boot_vfat_108,Boot 1.0.8 (zImage+DTB+scr),fw108-scratch/fw108-image-377/boot.vfat,33554432,1960b896e510dfe8d619a14c207ad86209a2e31bbe310ed9a26c4ba136d5b99e,manifiesto fw108-image-377,VERIFIED
+gui_vendor_108,GUI vendor ARM 1.0.8 (ELF, not stripped),fw108-scratch/ext108/fs108/x6200_ui_v100,1684984,26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,fs108 (paquete oficial; hash de payload marcado UNVERIFIED_VENDOR_PAYLOAD en QA28),VERIFIED_PAYLOAD_HASH
+gui_vendor_106,GUI vendor ARM 1.0.6,refs/vendor-fw/x6200_ui_v100,1649256,b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,refs/vendor-fw (preservado),VERIFIED
+fpga_bitstream,FPGA 10CL025 bitstream,NO LOCALIZADO,-,-,Buscado por nombre (.rbf/.sof/.pof/bitstream/fpga) y por contenido en las imágenes; sin artefacto separado,NO_ENCONTRADO
+note_fpga_control,Control/versión de FPGA dentro del MCU 1.0.8,fw108-scratch/x6200-base-rea/x6200-108.dec.bin (strings),-,c3f7d028bc63e43fbb478a09e1032d46059b71efe217a60b576231866fbc2c0a,Cadenas "Init FPGA"/"FPGA FW Version"/"FPGA Flash verification failed" (0x0804fd2d/0x080502e7/0x080503b2),HYPOTHESIS
