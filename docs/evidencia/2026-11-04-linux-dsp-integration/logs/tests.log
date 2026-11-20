@@ -1,0 +1,16 @@
+208 comprobaciones, 0 fallos
+29 comprobaciones, 0 fallos
+88 comprobaciones, 0 fallos
+53 comprobaciones, 0 fallos
+47 comprobaciones, 0 fallos
+59 comprobaciones, 0 fallos
+24 comprobaciones, 0 fallos
+47 comprobaciones, 0 fallos
+59 comprobaciones, 0 fallos
+/tmp/qa-linux-dsp-integration/route_service.arm: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+/tmp/qa-linux-dsp-integration/route_transport_x6200.arm.on.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV), not stripped
+/tmp/qa-linux-dsp-integration/route_libaether_proxy.arm.on.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV), not stripped
+route-service self-check: 0 fails, writes=3
+FEATURE_ON_BUILD=RUN_OK
+route-service self-check: 0 fails, writes=3
+QEMU_SELF_CHECK=PASS

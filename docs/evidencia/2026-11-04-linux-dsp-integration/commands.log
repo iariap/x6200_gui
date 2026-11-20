@@ -1,0 +1,223 @@
+# Commands log — QA-LINUX-DSP-INTEGRATION — 2026-11-04 UTC (offline)
+
+## 0. Base / PRs / worktree
+cd x6200_gui && git fetch fork -> ok
+git rev-parse fork/main -> 681074e0adac5a79f0392b4e51284167abf5e342
+git rev-parse origin/main -> e1476ece... (distinto, NO usado); main local 6a29687d intacto
+gh pr view 394/393/392/391/389/388/386/385/368/370/373/384 --json headRefOid,state
+  -> #394 56954c2d, #393 25ae632a, #392 697cea97, #391 de35affa, #389 c0299e0b, #388 7cb97cf6,
+     #386 84777dff, #385 68c501a8, #368 12aef989, #370 45b2bcc4 (merged), #373 1b0f9e44, #384 b46eba0b
+git worktree add x6200-linux-dsp-integration -b feat/linux-dsp-safe-speaker-integration 681074e0 -> ok
+git status -> limpio, HEAD 681074e0
+
+## 1. Lectura previa / inventario
+# PR #394 route_arbiter_model y harness 156 checks: base de contrato (no se copia a produccion sin reconciliar)
+# #364 router (PR #384, commit ef0d2da2, default OFF), #368 A' guardian (readback bloqueado), #370 R' R_INCONCLUSIVE
+grep -rn '/dev/i2c-0' src/ refs/X6200Control/src -> solo radio.c (BASE_I2C_DEV) y libaether low/control.c open()
+rootfs/usr/sbin/x6200_daemon -> while GUI; backoff 2/5/15/60; NO lanza arbitro; NO watchdog
+src/audio.c -> capture_deliver (recorder/decoders, no speaker); audio_play_en usa HMic/IMic=0
+refs/X6200Control/src/control.c -> record_set RMW sombra; cmd/get; idle reescribe 218 B
+
+## 2. Implementacion integrada (branch-local, DEFAULT OFF)
+# src/linux_dsp_route/: route_common.h, route_shadow.[ch], route_arbiter.[ch], route_ipc.[ch],
+#                        route_supervisor.[ch], route_daemon_main.c, CMakeLists.txt
+# CMakeLists.txt: option X6200_LINUX_DSP_ROUTE OFF + add_subdirectory condicional
+# tests/linux-dsp-integration/test_integration.c + run_tests.sh
+
+## 3. Tests/build reales
+gcc -std=c11 -O2 -Wall -Wextra -Werror -Isrc/linux_dsp_route src/... tests/... -o /tmp/qa/test_integration
+  -> compila sin warnings
+tests/linux-dsp-integration/run_tests.sh
+  -> 208 comprobaciones, 0 fallos
+  -> ARM: route_arbiter.arm ELF32 ARM EABI5 (toolchain ROM)
+  -> qemu-arm-static -L sysroot route_arbiter.arm --self-check -> "0 fails, writes=3" -> QEMU_SELF_CHECK=PASS
+
+## 4. Wiring stage (task-23, branch-local DEFAULT OFF)
+
+```
+# Hooks GUI guardados #ifdef X6200_LINUX_DSP_ROUTE: src/audio.c (post-Speex submit, TTS priority),
+# src/radio.c (TX/ATU disable-first), src/CMakeLists (sources/defines sólo ON)
+# route_client_worker.[ch] (SPSC ring 4x4410, worker dedicado, sink, TTS), route_sink.h,
+# route_wiring.[ch] (QA gate env+archivo, activacion RX_LINUX BLOQUEADA por proxy incompleto),
+# route_transport_x6200.c (x6200_control_cmd, mismo registro/framing), route_hooks.[ch],
+# route_service_main.c (--arbiter/--supervisor/--self-check), CMake option/install sólo ON,
+# rootfs/usr/sbin/x6200_daemon: arranca servicio sólo si binario ON + /etc/x6200_route_qa.enable
+tests/linux-dsp-integration/run_tests.sh
+  -> 208 comprobaciones, 0 fallos (arbitro/IPC/supervisor)
+  -> 29 comprobaciones, 0 fallos  (wiring worker/sink/QA gate/IPC real/TTS/no deadlock)
+  -> ARM route_service.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails; QEMU=PASS
+```
+Nota: la activacion RX_LINUX sigue BLOQUEADA (proxy completo de libaether no cableado); el worker/QA
+gate/servicio se prueban con mocks. Build completo GUI feature-ON no verificado (entorno).
+
+## 5. Validacion (commit documental previo cb7a31b7)
+
+```
+git diff --check 681074e0 HEAD                    -> exit 0
+tests/linux-dsp-integration/run_tests.sh          -> 208 comprobaciones, 0 fallos
+  -> ARM: route_arbiter.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails, QEMU_SELF_CHECK=PASS
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del codigo nuevo: uv sync/x6200-ab themes/contracts por ~/.cache/uv read-only
+    (os error 30); check_wcag_rendered/check_widget_text/check_drawbuf_partial porque el worktree no
+    tiene el submodulo lvgl inicializado; banco QEMU BLOCKED (falta entorno del owner).
+  - `[check] bash -n tests/linux-dsp-integration/run_tests.sh` -> ok
+python3 asf/scripts/risk.py x6200 --files <29 archivos> -> exit 0
+  risk="high", reviewers=["reviewer-data","reviewer-frontend","reviewer-infra","reviewer-security"]
+  (cambios en CMakeLists.txt/src/linux_dsp_route; feature DEFAULT OFF, sin wiring de produccion)
+```
+
+Nota honesta: **no se declara PASS** de build de imagen/QEMU-harness/contrato/fisico. check-matrix exit 1
+es entorno preexistente; los gates de codigo del modulo pasan via `run_tests.sh` host+ARM+QEMU.
+La feature esta DEFAULT OFF y no se instala/arranca.
+
+## 6. Validacion wiring (commit 609ec0f9)
+
+```
+git diff --check 681074e0 HEAD                    -> exit 0
+tests/linux-dsp-integration/run_tests.sh          -> 208 + 29 = 237 comprobaciones, 0 fallos
+  ARM route_service.arm ELF32 ARM EABI5; qemu-arm-static --self-check -> 0 fails; QEMU=PASS
+check-matrix -> exit 1 por ENTORNO (6 FAIL uv cache read-only / lvgl no inicializado / banco QEMU
+  BLOCKED); no por el codigo. `bash -n tests/.../run_tests.sh` -> ok
+risk.py --files -> exit 0; risk=high (src/CMake/daemon; feature DEFAULT OFF, no produccion)
+```
+
+Estado: wiring compilable/tested; RX_LINUX **bloqueado** porque el proxy completo de libaether no
+esta cableado; build GUI feature-ON no verificado en este entorno (SKIP honesto). Sin fisico.
+
+## 7. Proxy stage (task-24)
+
+```
+# inventario escritores reg12 en refs/X6200Control/src/control.c: record_set(0x8), ptt_set(0x40000),
+# atu_tune(0x2000 + host_cmd), atu_set(0x1000), modem_set(0x4000), swrscan_set(0x10),
+# split_set(0x2), poweroff(0x10000), calibration_set(0x8000), cmd generico(12), idle(54 regs)
+# src/linux_dsp_route/route_proxy.[ch]: API proxy GUI->IPC->arbitro; record_set rechazado (OWNERSHIP);
+# wrappers PTT/ATU/modem/swrscan/split/poweroff con RMW sobre cache; timeout/cache invalida
+# CMake: proxy agregado al library; run_tests.sh: test_proxy + feature ON host/stub build + ARM object
+tests/.../run_tests.sh -> 208 + 29 + 88 = 325 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK; route_transport_x6200.arm.on.o ELF32 ARM; QEMU_SELF_CHECK=PASS
+cmake -S . -B /tmp/qa-cmake-on -DX6200_LINUX_DSP_ROUTE=ON -> exit 1 en configure por pkg-config
+  ausente (p.ej. speexdsp) => SKIP entorno, build GUI completa feature ON no verificada (no PASS).
+```
+
+Bloqueo restante: reemplazo mecanico de call-sites libaether/GUI + idle por proxy total; luego
+habilitacion QA y protocolo fisico. RX_LINUX sigue bloqueado, PRODUCTION_READY=FAIL.
+
+## 8. Validacion proxy (commit aa06b2e7)
+
+```
+git diff --check 681074e0 HEAD     -> exit 0
+tests/.../run_tests.sh             -> 208 + 29 + 88 = 325 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK (host stubs SDK); ARM route_transport_x6200.arm.on.o; QEMU_SELF_CHECK=PASS
+cmake -DX6200_LINUX_DSP_ROUTE=ON   -> exit 1 configure por pkg-config ausente (speexdsp, etc.):
+  SKIP entorno; build GUI completa feature ON no verificada (no PASS)
+check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
+```
+
+## 9. Call-sites stage (task-25)
+
+```
+# src/linux_dsp_route/route_libaether_proxy.[ch]: interposicion fuerte de la API libaether del reg12
+# (record/ptt/atu_tune/atu_set/modem/swrscan/split/poweroff/calibration/cmd(12)) + idle suprimido;
+# dlsym(RTLD_NEXT) para no-route; host_cmd ATU directo; tests con stubs (ROUTE_LIB_PROXY_TEST).
+# src/CMakeLists: wrapper en target GUI solo feature ON + dl; run_tests.sh: test_callsites + ARM object.
+tests/.../run_tests.sh -> 208 + 29 + 88 + 52 = 377 comprobaciones, 0 fallos
+  -> FEATURE_ON_BUILD=RUN_OK; ARM route_libaether_proxy.arm.on.o; QEMU_SELF_CHECK=PASS
+```
+
+## 10. Validacion call-sites (commit c9f88fd9)
+
+```
+git diff --check -> exit 0
+tests -> 377 comprobaciones, 0 fallos; FEATURE_ON_BUILD=RUN_OK; ARM wrapper object; QEMU=PASS
+check-matrix -> exit 1 por entorno (uv/lvgl/bench); risk.py -> high (src/CMake, feature OFF)
+```
+
+## 11. Idle/build stage (task-26)
+
+```
+# analisis idle: all_cmd=2+4*54=218B; REFRASH_TIMEOUT 1000ms; radio_thread -> idle bajo lock
+# route_libaether_proxy: idle con proxy activo NO escribe; ROUTE_ERR_UNSUPPORTED (refresco bloqueado,
+#   falta snapshot autoritativo de all_cmd/readback); tests 53 checks (callsites)
+git submodule update --init lvgl -> OK (74d0a816...)
+PKG_CONFIG_PATH=ROM-sysroot pkgconfig cmake -S . -B .qa-build/cmake-on -DX6200_LINUX_DSP_ROUTE=ON
+  -> CONFIGURE+GEN OK (speexdsp 1.2.1, pulse, alsa, drm... encontrados)
+cmake --build cmake-on --target x6200_route_service -> FAIL: flags ARM (-mfpu=neon-vfpv4) con cc host
+cmake con CMAKE_C_COMPILER=arm-buildroot-gcc -> configure FAIL (falta toolchain file/entorno Buildroot)
+=> build GUI/service feature ON: SKIP de entorno, no PASS; capacidad/path exactos en tests-build-results.md
+```
+
+## 12. Validacion final idle/build (commit 9a55c152)
+
+```
+git diff --check -> exit 0
+tests/.../run_tests.sh -> 208 + 29 + 88 + 53 = 378 comprobaciones, 0 fallos
+  FEATURE_ON_BUILD=RUN_OK; ARM wrapper/transporte objects; QEMU_SELF_CHECK=PASS
+cmake -DX6200_LINUX_DSP_ROUTE=ON (lvgl + ROM sysroot pkgconfig) -> CONFIGURE/GEN OK
+  build GUI/service feature ON -> SKIP entorno (flags ARM con cc host / falta toolchain file Buildroot)
+check-matrix/risk -> entorno preexistente / risk high (feature OFF); sin PASS fisico ni de build completa
+```
+
+## 13. Snapshot/build stage (task-27)
+
+```
+# route_snapshot.[ch]: captura all_cmd via x6200_control_get (GETTER), wire 218B, lease/version/reg12 authority
+# idle wrapper: con proxy activo captura snapshot, valida autoridad, NO escribe, ROUTE_ERR_UNSUPPORTED
+# CMake service link: fallback find_library(aether_x6200_control) del sysroot
+tests/.../run_tests.sh -> 208+29+88+53+24 = 402 comprobaciones, 0 fallos; QEMU_SELF_CHECK=PASS; FEATURE_ON=RUN_OK
+TC=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake
+PKG_CONFIG_PATH/SYSROOT_DIR=ROM-sysroot cmake -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC -> configure OK
+cmake --build --target x6200_route_service -> ARM EABI5 OK (libaether del sysroot)
+cmake --build --target x6200_gui -> FAIL en src/radio.c:65/69 static assertions ABI preexistentes
+  (samples[512], sizeof flow 552) vs SDK del sysroot => SKIP entorno, no PASS
+```
+
+## 14. Snapshot-bulk stage (task-28)
+
+```
+# route_common: bus.write_block; route_ipc: REQ_REFRESH + block[54] + client_refresh
+# route_arbiter_refresh: valida lease/sombra/bulk; merge voice_rec; strips TX en ruta; bus fail=>FAULT
+# route_proxy_refresh_block; transport adapter condicional X6200_CTRL_HAVE_BULK_WRITE
+# parche propuesto X6200Control (shadow_update + bulk_write 218B) en docs/.../patches/ (NO aplicado)
+# tests: test_refresh 47 checks
+tests -> 208+29+88+53+47+24+47 = 496 comprobaciones, 0 fallos; FEATURE_ON=RUN_OK; QEMU=PASS
+# GUI feature-ON build reintento con toolchain Buildroot:
+#   configure OK; service ARM OK; GUI falla static assertions ABI radio.c:65/69 (samples[512]/flow 552)
+#   contra libaether/X6200Control 0.15.3 del sysroot => mismatch repo/SDK, SKIP entorno (no PASS)
+```
+
+## 15. Full feature-ON build resuelto (task-28)
+
+```
+TC=rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake
+REFS=refs/X6200Control/include
+cmake -DX6200_LINUX_DSP_ROUTE=ON -DCMAKE_TOOLCHAIN_FILE=$TC -DCMAKE_C_FLAGS=-I$REFS ... -> OK
+cmake --build --target x6200_gui -j8 -> [100%] Built target x6200_gui (ARM EABI5)
+cmake --build --target x6200_route_service -> [100%] Built target x6200_route_service (ARM EABI5)
+```
+
+## 16. X6200Control patch applied + patched feature-ON build (task-29)
+
+```
+cp -a refs/X6200Control qa-x6200ctrl-patched/src
+# patch: x6200_control_shadow_update(cmd,arg) + x6200_control_bulk_write(block,len) (218B send_regs)
+cmake Buildroot toolchain -> BUILD/INSTALL OK (install/lib/libaether_x6200_control.so.0.15.3)
+cmake -DX6200_LINUX_DSP_ROUTE=ON -DX6200_CTRL_HAVE_BULK_WRITE=ON + headers refs + patched lib
+  -> configure OK; x6200_gui [100%] Built ARM EABI5; x6200_route_service [100%] Built ARM EABI5
+     (nm -D: U x6200_control_bulk_write)
+tests: 614 comprobaciones, 0 fallos (incluye test_patched: idle refresh bulk/voice merge/TX strip/sombra)
+```
+
+## 17. Reproducible build tooling (task-30)
+
+```
+tools/linux-dsp-integration/reproducible-build.sh patch-only
+  -> patch sha256 OK (0d6dd1c7...); aplica 1 vez, 2da rechazada (idempotente)
+tools/linux-dsp-integration/reproducible-build.sh
+  -> parche aplicado en copia temporal (refs intacto)
+  -> build libaether parcheada OK
+  -> feature-ON ARM GUI+servicio OK (x6200_control_bulk_write referenciado)
+  -> normal OFF ARM GUI OK; sin linux_dsp_route/servicio/símbolos => BASE
+  -> tests host/ARM/QEMU OK
+  -> paquete /tmp/linux-dsp-repro/pkg (GUI+servicio+MANIFEST+SHA256SUMS), NO deploy
+  -> REPRO_RC=0 PASS reproducible build completo
+```

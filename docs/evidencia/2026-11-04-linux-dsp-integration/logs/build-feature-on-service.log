@@ -1,0 +1,44 @@
+[  0%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_transport_x6200.c.o
+[  0%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_supervisor.c.o
+[  0%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_ipc.c.o
+[  0%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_shadow.c.o
+[  0%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_arbiter.c.o
+[ 50%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_client_worker.c.o
+[ 50%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_hooks.c.o
+[ 50%] Building C object src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_wiring.c.o
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: warning: ‘-mcpu=’ is deprecated; use ‘-mtune=’ or ‘-march=’ instead
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfloat-abi=hard’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:93: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_arbiter.c.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:107: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_ipc.c.o] Error 1
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:121: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_supervisor.c.o] Error 1
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:79: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_shadow.c.o] Error 1
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:135: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_client_worker.c.o] Error 1
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:163: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_hooks.c.o] Error 1
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:149: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_wiring.c.o] Error 1
+cc: error: unrecognized command-line option ‘-mfpu=neon-vfpv4’
+gmake[3]: *** [src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/build.make:177: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/route_transport_x6200.c.o] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:826: src/linux_dsp_route/CMakeFiles/x6200_linux_dsp_route.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:897: src/linux_dsp_route/CMakeFiles/x6200_route_service.dir/rule] Error 2
+gmake: *** [Makefile:338: x6200_route_service] Error 2
