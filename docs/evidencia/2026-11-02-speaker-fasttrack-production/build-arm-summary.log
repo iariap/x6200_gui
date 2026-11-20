@@ -1,0 +1,28 @@
+Compilación ARM Buildroot vigente (SDK X6200Control v0.1.1 + patch)
+comando: make x6200-gui-dirclean && make x6200-gui (buildroot del proyecto)
+exit: 0
+binario: 14.012.016 B
+sha256: ce11bece6217ca3f1911a5ff33ad3343e94089c32c258f099e5dd0b9a577033a
+gate: verifica-firmware-port.py OK (ELF32 ARM, 3/3 marcas)
+log completo (fuera del repo): fw108-scratch/evidence/rx-router-364/build-arm2-full.log
+tail:
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target//usr/share/x6200/themes/Trail.json
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target//usr/share/x6200/cty.dat
+prune-vendor-rootfs: 0 archivo(s) del vendor fuera de /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target
+-- Up-to-date: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/btn.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/btn_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/dialog.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/dialog_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/msg.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/msg_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/msg_tiny.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/msg_tiny_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/panel.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/panel_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_big.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_big_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_long.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_long_dark.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_short.bin
+-- Installing: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/share/x6200/images/top_short_dark.bin

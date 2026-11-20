@@ -38,6 +38,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     visual_policy.c
     sql_policy.c
     audio_enhancement.c
+    rx_audio_live.c
     wspr/wspr.c wspr/wsprnet.c
     theme.c cJSON.c app_frame.c station.c tx_level.c
     tx_player.c dialog_wspr.c cluster/spots.c gps.c
