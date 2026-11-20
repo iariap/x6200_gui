@@ -1,0 +1,3 @@
+# Vendor GUI 1.0.6 vs 1.0.8 - símbolos/strings de filtros
+Ambas: BaseCommIIC::updateRxFilters, MainWidget::sig_updateFilter/updateFilterGroup, XTwinFilterWidget, XRadioFilterSetting, strings filter_ssb/cw/am/nfm/wfm, rx_filter, NOTCH FC, FILTER %d
+Diff: sólo direcciones desplazadas (1.0.8 mayor); sin features nuevas de filtros/DSP visibles a nivel de símbolos/strings.

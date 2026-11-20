@@ -1,0 +1,14 @@
+test_agc_fields (__main__.TestRegisterMapping.test_agc_fields) ... ok
+test_dnf_fields (__main__.TestRegisterMapping.test_dnf_fields) ... ok
+test_gui_limit_db_negative_rule (__main__.TestRegisterMapping.test_gui_limit_db_negative_rule) ... ok
+test_gui_mode_defaults_and_mirror (__main__.TestRegisterMapping.test_gui_mode_defaults_and_mirror) ... ok
+test_nr_nb_fields (__main__.TestRegisterMapping.test_nr_nb_fields) ... ok
+test_reg_indices (__main__.TestRegisterMapping.test_reg_indices) ... ok
+test_rx_eq_fields (__main__.TestRegisterMapping.test_rx_eq_fields) ... ok
+test_ssb_filter_pack (__main__.TestRegisterMapping.test_ssb_filter_pack) ... ok
+test_symmetric_modes (__main__.TestRegisterMapping.test_symmetric_modes) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.000s
+
+OK
