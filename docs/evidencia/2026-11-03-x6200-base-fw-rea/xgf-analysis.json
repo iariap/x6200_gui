@@ -1,0 +1,604 @@
+[
+  {
+    "path": "refs/vendor-fw/x6200_mcu_20250111134652.xgf",
+    "size": 524288,
+    "sha256": "dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3",
+    "entropy": 7.7484,
+    "zeros": 1619,
+    "ff": 1553,
+    "ascii_pct": 0.3881,
+    "blocks": [
+      {
+        "size": 128,
+        "count": 4096,
+        "min": 4.0,
+        "avg": 5.903,
+        "max": 6.781
+      },
+      {
+        "size": 256,
+        "count": 2048,
+        "min": 4.0,
+        "avg": 6.369,
+        "max": 7.343
+      },
+      {
+        "size": 512,
+        "count": 1024,
+        "min": 4.0,
+        "avg": 6.682,
+        "max": 7.689
+      },
+      {
+        "size": 1024,
+        "count": 512,
+        "min": 4.0,
+        "avg": 6.85,
+        "max": 7.864
+      },
+      {
+        "size": 4096,
+        "count": 128,
+        "min": 4.0,
+        "avg": 6.978,
+        "max": 7.963
+      }
+    ],
+    "top16": [
+      {
+        "hex": "6c954341fc0ba633d8933b86aa7023e6",
+        "count": 5087
+      },
+      {
+        "hex": "7a491eeb33282b8b84a7ad47b83103d0",
+        "count": 3214
+      },
+      {
+        "hex": "227ae5b5070ce32fe2d6862ec5f83524",
+        "count": 26
+      },
+      {
+        "hex": "12720631a141da351b87787853e98f2e",
+        "count": 15
+      },
+      {
+        "hex": "e8eff96cd4d15d22d8f7d3569c80068f",
+        "count": 7
+      },
+      {
+        "hex": "da2403bb9d22dc6972ba5fd30960f50c",
+        "count": 7
+      },
+      {
+        "hex": "7ac54cd58963488678989632f1286300",
+        "count": 5
+      },
+      {
+        "hex": "2e2afe9a0eab257a555055cbc0196d95",
+        "count": 4
+      }
+    ],
+    "low512": [
+      {
+        "off": 323584,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 324096,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 324608,
+        "entropy": 4.547,
+        "unique16": 4
+      },
+      {
+        "off": 325632,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 326144,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 326656,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 327168,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 345600,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 346112,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 346624,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 347136,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 347648,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 348160,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 348672,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 349184,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 349696,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 350208,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 350720,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 351232,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 351744,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 352256,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 352768,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 353280,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 353792,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 354304,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 354816,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 355328,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 355840,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 356352,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 356864,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 357376,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 357888,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 358400,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 358912,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 359424,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 359936,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 360448,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 360960,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 361472,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 361984,
+        "entropy": 4.0,
+        "unique16": 1
+      }
+    ],
+    "low512_count": 255,
+    "compression": {
+      "zlib": {
+        "ok": false,
+        "error": "error"
+      },
+      "gzip": {
+        "ok": false,
+        "error": "BadGzipFile"
+      },
+      "bz2": {
+        "ok": false,
+        "error": "OSError"
+      },
+      "lzma": {
+        "ok": false,
+        "error": "LZMAError"
+      }
+    }
+  },
+  {
+    "path": "fw108-scratch/ext108/fs108/x6200_mcu_20260820141208.xgf",
+    "size": 524288,
+    "sha256": "9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23",
+    "entropy": 7.4704,
+    "zeros": 1356,
+    "ff": 1331,
+    "ascii_pct": 0.3947,
+    "blocks": [
+      {
+        "size": 128,
+        "count": 4096,
+        "min": 4.0,
+        "avg": 5.649,
+        "max": 6.75
+      },
+      {
+        "size": 256,
+        "count": 2048,
+        "min": 4.0,
+        "avg": 6.055,
+        "max": 7.35
+      },
+      {
+        "size": 512,
+        "count": 1024,
+        "min": 4.0,
+        "avg": 6.327,
+        "max": 7.692
+      },
+      {
+        "size": 1024,
+        "count": 512,
+        "min": 4.0,
+        "avg": 6.471,
+        "max": 7.852
+      },
+      {
+        "size": 4096,
+        "count": 128,
+        "min": 4.0,
+        "avg": 6.583,
+        "max": 7.965
+      }
+    ],
+    "top16": [
+      {
+        "hex": "6c954341fc0ba633d8933b86aa7023e6",
+        "count": 9640
+      },
+      {
+        "hex": "7a491eeb33282b8b84a7ad47b83103d0",
+        "count": 1936
+      },
+      {
+        "hex": "85e7ce3309dfb16c7d63a1caffdc3af9",
+        "count": 15
+      },
+      {
+        "hex": "f6aee1623500263256dd3bc096f42a2b",
+        "count": 14
+      },
+      {
+        "hex": "1e04adfb4aa5829965fa3a03956441e2",
+        "count": 7
+      },
+      {
+        "hex": "3949e6dbf33ca941937f3a1c8c8daf94",
+        "count": 5
+      },
+      {
+        "hex": "e464b25ccb97c3914fe621c07cb642c6",
+        "count": 5
+      },
+      {
+        "hex": "093d2b3c95c4e8281912d586dc9034ec",
+        "count": 5
+      }
+    ],
+    "low512": [
+      {
+        "off": 322560,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 323072,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 323584,
+        "entropy": 4.911,
+        "unique16": 6
+      },
+      {
+        "off": 324608,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 325120,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 325632,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 326144,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 344576,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 345088,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 345600,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 346112,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 346624,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 347136,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 347648,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 348160,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 348672,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 349184,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 349696,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 350208,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 350720,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 351232,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 351744,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 352256,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 352768,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 353280,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 353792,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 354304,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 354816,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 355328,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 355840,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 356352,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 356864,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 357376,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 357888,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 358400,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 358912,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 359424,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 359936,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 360448,
+        "entropy": 4.0,
+        "unique16": 1
+      },
+      {
+        "off": 360960,
+        "entropy": 4.0,
+        "unique16": 1
+      }
+    ],
+    "low512_count": 358,
+    "compression": {
+      "zlib": {
+        "ok": false,
+        "error": "error"
+      },
+      "gzip": {
+        "ok": false,
+        "error": "BadGzipFile"
+      },
+      "bz2": {
+        "ok": false,
+        "error": "OSError"
+      },
+      "lzma": {
+        "ok": false,
+        "error": "LZMAError"
+      }
+    }
+  }
+]
