@@ -1,0 +1,11 @@
+surface,path,preserved,evidence
+frequency/mode,VFO/cfg->libaether directo,sí,test suite 717
+native filters,EQ/NR/NB/DNF,EQ directo libaether,sí,test suite/build OFF
+volume/mute,audio_set_play_vol/mute,sí sin cambios,test suite
+PTT/TX,radio.c notify + x6200_control_ptt_set,proxy disable-first,test_callsites/hardening
+ATU,sintonía/atu_set/host_cmd,reg12 proxy + host directo,test_callsites
+split/VFO,split_set,proxy RMW,test_proxy
+poweroff,poweroff,proxy reg12; kill suprimido QA,test_callsites
+generated audio/TTS,audio_play_en hooks,prioridad worker,test_wiring
+CW/digital,decoders/recorder sin cambios,test suite
+idle refresh,x6200_control_idle,proxy-only + status explícito,test_callsites/patched

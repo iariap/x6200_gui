@@ -1,0 +1,23 @@
+[ 40%] Building C object CMakeFiles/aether_x6200_control.dir/src/low/control.c.o
+[ 40%] Building C object CMakeFiles/aether_x6200_control.dir/src/control.c.o
+/home/pablo/desa/x6200/qa-x6200ctrl-patched/src/src/low/control.c: In function ‘x6200_control_bulk_write’:
+/home/pablo/desa/x6200/qa-x6200ctrl-patched/src/src/low/control.c:489:22: warning: passing argument 1 of ‘send_regs’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  489 |     return send_regs(block, len);
+      |                      ^~~~~
+/home/pablo/desa/x6200/qa-x6200ctrl-patched/src/src/low/control.c:70:29: note: expected ‘void *’ but argument is of type ‘const uint8_t *’ {aka ‘const unsigned char *’}
+   70 | static bool send_regs(void *regs, size_t size)
+      |                       ~~~~~~^~~~
+[ 60%] Linking C shared library lib/libaether_x6200_control.so
+[100%] Built target aether_x6200_control
+-- Install configuration: "Release"
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so.0.15.3
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so.0
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so
+-- Up-to-date: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so.0.15.3
+-- Up-to-date: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so.0
+-- Up-to-date: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/lib/libaether_x6200_control.so
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/include/aether_radio/x6200_control/api.h
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/include/aether_radio/x6200_control/control.h
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/include/aether_radio/x6200_control/low/control.h
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/include/aether_radio/x6200_control/low/flow.h
+-- Installing: /home/pablo/desa/x6200/qa-x6200ctrl-patched/install/include/aether_radio/x6200_control/low/gpio.h

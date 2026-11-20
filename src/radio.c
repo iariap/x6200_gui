@@ -6,6 +6,9 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "radio.h"
+#ifdef X6200_LINUX_DSP_ROUTE
+#include "linux_dsp_route/route_hooks.h"
+#endif
 #include "main.h"
 #include "btaudio.h"
 #include "cb.h"
@@ -270,6 +273,9 @@ bool radio_tick() {
             case RADIO_RX:
                 if (pack->flag.tx) {
                     state = RADIO_TX;
+#ifdef X6200_LINUX_DSP_ROUTE
+                    x6200_route_radio_tx(true);   /* disable-first del RX Linux */
+#endif
                     notify_tx();
                 }
                 break;
@@ -277,6 +283,9 @@ bool radio_tick() {
             case RADIO_TX:
                 if (!pack->flag.tx) {
                     state = RADIO_RX;
+#ifdef X6200_LINUX_DSP_ROUTE
+                    x6200_route_radio_tx(false);
+#endif
                     notify_rx();
                 } else {
                     tx_info_update(pack->tx_power * 0.1f, pack->vswr * 0.1f, pack->alc_level * 0.1f);
@@ -284,6 +293,9 @@ bool radio_tick() {
                 break;
 
             case RADIO_ATU_START:
+#ifdef X6200_LINUX_DSP_ROUTE
+                x6200_route_radio_tx(true);   /* ATU: disable-first */
+#endif
                 WITH_RADIO_LOCK(x6200_control_atu_tune(true));
                 state = RADIO_ATU_WAIT;
                 break;
@@ -304,6 +316,9 @@ bool radio_tick() {
 
                     // TODO: change with observer on atu->loaded change
                     WITH_RADIO_LOCK(x6200_control_cmd(x6200_atu_network, pack->atu_params));
+#ifdef X6200_LINUX_DSP_ROUTE
+                    x6200_route_radio_tx(false);
+#endif
                     state = RADIO_RX;
                 } else if (pack->flag.tx) {
                     tx_info_update(pack->tx_power * 0.1f, pack->vswr * 0.1f, pack->alc_level * 0.1f);

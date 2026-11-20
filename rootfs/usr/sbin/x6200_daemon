@@ -41,6 +41,7 @@ MAX_TMP_LOGS=4      # retención máxima de logs propios en /tmp si DATA no escr
 child=0
 waiter=0
 lock_held=0
+route_svc=0
 stop_requested=0
 
 is_int() {
@@ -144,6 +145,9 @@ cleanup() {
     if [ "$waiter" -gt 0 ]; then
         kill -TERM "$waiter" 2>/dev/null
     fi
+    if [ "$route_svc" -gt 0 ]; then
+        kill -TERM "$route_svc" 2>/dev/null
+    fi
     release_lock
 }
 
@@ -213,6 +217,14 @@ main() {
     fi
 
     prepare_images
+
+    # QA-LINUX-DSP-INTEGRATION (branch-local, DEFAULT OFF): el binario del servicio
+    # sólo se instala con -DX6200_LINUX_DSP_ROUTE=ON y la activación runtime exige el
+    # gate /etc/x6200_route_qa.enable (no operador). Sin binario/gate => no-op: BASE.
+    if [ -x /usr/sbin/x6200_route_service ] && [ -f /etc/x6200_route_qa.enable ]; then
+        /usr/sbin/x6200_route_service --arbiter /run/x6200_route.sock --transport x6200 &
+        route_svc=$!
+    fi
 
     fails=0
     run=0
