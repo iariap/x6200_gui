@@ -1,0 +1,5 @@
+x6200_route_service: shutdown_safe physical_confirmed=0
+BASE ver1: 1.0.0
+BASE ver2: 1.0.0
+BASE fw version: 1.0.8
+BASE fw date: Aug 19 2026,16:13:08

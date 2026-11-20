@@ -1,0 +1,10 @@
+gate,status,evidence_type,evidence,limitations
+LINUX_PCM_PROVENANCE,PARTIAL,OFFLINE+ACTIVATION+no instrumented sink,"offline-pcm-provenance.md PASS; activation log CONFIRMED","sin A/B, sin sink-input capturado, sin grabación externa; no PASS"
+LINUX_DSP_AUDIBLE_DIFFERENCE,PENDING,no evidence,sin tomas A/B ni grabación,no ejecutado; no atribuible
+MUX_PHYSICAL_STATE_VERIFICATION,BLOCKED,no observation,sin readback MCU (R' #370); mux-physical.md,requiere observación/instrumentación autorizada
+SINGLE_WRITER_CONTROL_PHYSICAL,BLOCKED,no observation,no hay observación I2C física; sólo estático,no se midió hardware
+INDEPENDENT_BASE_RESTORE_PHYSICAL,PARTIAL,LOGS,"service.shutdown_safe physical_confirmed=0; BASE fw 1.0.8",sin timing ni observación independiente
+RESTORE_250MS_PHYSICAL,PENDING,no measurement,"no reloj externo ni transición audible",recovery-measurement-plan; no destructivo
+TX_PTT_ATU_SAFETY,PENDING,no tests,no TX/PTT/ATU por restricción,fuera de alcance de esta auditoría
+RADIO_CONTROL_REGRESSION,PASS,OFFLINE,"847 checks 0 fallos; ARM/QEMU; control audit",no hardware
+PRODUCTION_READY,FAIL,integration+physical,"matriz; activación QA default OFF",prohibido PASS sin gates físicos

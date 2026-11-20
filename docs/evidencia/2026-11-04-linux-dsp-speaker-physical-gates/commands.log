@@ -1,0 +1,9 @@
+# Comandos reales (offline)
+- git -C x6200_gui rev-parse fork/main -> 681074e0...
+- gh pr view 396/395/394 -> c7916d42/ddec3f96/56954c2d, OPEN
+- git worktree add x6200-linux-dsp-speaker-physical-gates -b audit/linux-dsp-speaker-physical-gates 681074e0
+- copiados de #396: physical-session-2026-11-04.md + logs (gui-activation.log, gui.log, service*.log, state-prejson)
+- python3 tools/linux-dsp-physical-gates/audit_physical_session.py prior-session --out audit-session-report.md -> ACTIVACIÓN CONFIRMADA; sink/audible/provenance no instrumentados; MUX BLOCKED; vol mismatch detectado
+- python3 tools/linux-dsp-physical-gates/check_pcm_provenance.py <worktree-#396> -> PASS (audio_enh_process=1, mismo buffer recorder/decoders/router, QA init fuera de callback)
+- (cd <worktree-#396> && tests/linux-dsp-integration/run_tests.sh) -> 847 comprobaciones, 0 fallos; FEATURE_ON=RUN_OK; QEMU=PASS
+- no se activó MUX, no se ejecutó sesión física, no se tocó radio/firmware/main

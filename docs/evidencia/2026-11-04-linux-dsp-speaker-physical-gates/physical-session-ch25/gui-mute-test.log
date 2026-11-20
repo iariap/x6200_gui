@@ -1,0 +1,219 @@
+x6200 QA: gate OK ipc=/run/x6200_route.sock
+x6200 QA: IPC conectado, wiring READY (sin activar)
+[User]	(71521.389, +71521389)	 boot_identity: fuente: 67079e39727c5b81483d5d319e8d38e1 (x6200_gui) 	(in main.c line #147)
+[User]	(71526.079, +4690)	 main: CRASHLOG-MOD-INIT modulos=43 exe_base=0x004e0000 exe_md5=7accbc51f49aa3aaf1b3d28a029ef615 exe=/tmp/x6200-qa/x6200_gui (4689 ms) 	(in main.c line #450)
+[Warn]	(71526.079, +0)	 lastbreath_init_from_env: LASTBREATH lastbreath v=1 up_s=71508 up_ms=71508200 clean=0 boot=fbf1e13e radio=RX tx=0 app=home bat=na ev=4/4/0 last=none wus=0 msg=none 	(in main.c line #320)
+[User]	(71526.083, +4)	 main: Display: fbdev 	(in main.c line #509)
+[User]	(71526.091, +8)	 audio_init_sync: Conected 	(in audio.c line #303)
+[User]	(71526.103, +12)	 input_dev_by_name: Entrada 'matrix_keypad' encontrada en /dev/input/event0 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.104, +1)	 keypad_init: Teclado del panel en /dev/input/event0 	(in keypad.c line #199)
+[User]	(71526.104, +0)	 input_dev_by_name: Entrada 'rotary3' encontrada en /dev/input/event4 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.104, +0)	 keypad_init: Teclado del panel en /dev/input/event4 	(in keypad.c line #199)
+[User]	(71526.104, +0)	 input_dev_by_name: Entrada 'rotary0' encontrada en /dev/input/event1 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.105, +1)	 input_dev_by_name: Entrada 'rotary1' encontrada en /dev/input/event2 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.106, +1)	 input_dev_by_name: Entrada 'rotary2' encontrada en /dev/input/event3 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.106, +0)	 input_dev_by_name: Entrada 'rotary3' encontrada en /dev/input/event4 (por sysfs) 	(in input_dev.c line #89)
+[User]	(71526.119, +13)	 cfg_params_load_item: Loaded vol=0 (pk=0) 	(in params.c line #52)
+[User]	(71526.119, +0)	 cfg_params_load_item: Loaded sql=0 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.119, +0)	 cfg_params_load_item: No results for load sql_fm 	(in params.c line #77)
+[User]	(71526.119, +0)	 load_items_from_db: Can't load sql_fm (pk=0) 	(in cfg.c line #239)
+[User]	(71526.119, +0)	 cfg_params_load_item: Loaded pwr=4.000000 (pk=0) 	(in params.c line #67)
+[User]	(71526.119, +0)	 cfg_params_load_item: Loaded fft_dec=2 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.119, +0)	 cfg_params_load_item: No results for load tx_filter_low 	(in params.c line #77)
+[User]	(71526.119, +0)	 load_items_from_db: Can't load tx_filter_low (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.119, +0)	 cfg_params_load_item: No results for load tx_filter_high 	(in params.c line #77)
+[User]	(71526.119, +0)	 load_items_from_db: Can't load tx_filter_high (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.119, +0)	 cfg_params_load_item: No results for load field_boot 	(in params.c line #77)
+[User]	(71526.119, +0)	 load_items_from_db: Can't load field_boot (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.119, +0)	 cfg_params_load_item: No results for load voice_msg_gain 	(in params.c line #77)
+[User]	(71526.119, +0)	 load_items_from_db: Can't load voice_msg_gain (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +1)	 cfg_params_load_item: No results for load cluster_all_bands 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load cluster_all_bands (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load cluster_order 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load cluster_order (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load cluster_column 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load cluster_column (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load wefax_align 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load wefax_align (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load wefax_tilt 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load wefax_tilt (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load wspr_tx_freq 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load wspr_tx_freq (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load wspr_tx_pct 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load wspr_tx_pct (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load wspr_upload 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load wspr_upload (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load key_tone 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load key_tone (pk=0) 	(in cfg.c line #239)
+[User]	(71526.120, +0)	 cfg_params_load_item: Loaded band=204 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.120, +0)	 cfg_params_load_item: No results for load ant 	(in params.c line #77)
+[User]	(71526.120, +0)	 load_items_from_db: Can't load ant (pk=0) 	(in cfg.c line #239)
+[User]	(71526.121, +1)	 cfg_params_load_item: Loaded atu=1 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load key_speed 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load key_speed (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load key_mode 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load key_mode (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load iambic_mode 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load iambic_mode (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load key_vol 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load key_vol (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load key_train 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load key_train (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cwt_level 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cwt_level (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cwt_group 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cwt_group (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load qsk_time 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load qsk_time (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load key_ratio 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load key_ratio (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cw_decoder 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cw_decoder (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cw_tune 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cw_tune (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_2 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cw_decoder_snr_2 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_gist 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cw_decoder_snr_gist (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.121, +0)	 cfg_params_load_item: No results for load cw_decoder_peak_beta 	(in params.c line #77)
+[User]	(71526.121, +0)	 load_items_from_db: Can't load cw_decoder_peak_beta (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +1)	 cfg_params_load_item: No results for load cw_decoder_noise_beta 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load cw_decoder_noise_beta (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load cw_decoder_auto 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load cw_decoder_auto (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load agc_hang 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load agc_hang (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load agc_knee 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load agc_knee (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load agc_slope 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load agc_slope (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load comp 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load comp (pk=0) 	(in cfg.c line #239)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded dnf=0 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load dnf_center 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load dnf_center (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.122, +0)	 cfg_params_load_item: No results for load dnf_width 	(in params.c line #77)
+[User]	(71526.122, +0)	 load_items_from_db: Can't load dnf_width (pk=0) 	(in cfg.c line #239)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded nb=0 (pk=0) 	(in params.c line #52)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded nb_level=5 (pk=0) 	(in params.c line #52)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded nb_width=45 (pk=0) 	(in params.c line #52)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded nr=0 (pk=0) 	(in params.c line #52)
+[User]	(71526.122, +0)	 cfg_params_load_item: Loaded nr_level=0 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.123, +1)	 cfg_params_load_item: No results for load swrscan_linear 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load swrscan_linear (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load swrscan_span 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load swrscan_span (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load ft8_hold_freq 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load ft8_hold_freq (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_en 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_en (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_p1 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_p1 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_p2 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_p2 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_p3 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_p3 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_p4 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_p4 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_p5 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_p5 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_en 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_en (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p1 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_p1 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p2 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_p2 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p3 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_p3 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p4 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_p4 (pk=0) 	(in cfg.c line #239)
+[Warn]	(71526.123, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p5 	(in params.c line #77)
+[User]	(71526.123, +0)	 load_items_from_db: Can't load eq_rx_wfm_p5 (pk=0) 	(in cfg.c line #239)
+[User]	(71526.124, +1)	 cfg_params_load_item: Loaded eq_mic_en=1 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.124, +0)	 cfg_params_load_item: No results for load eq_mic_p1 	(in params.c line #77)
+[User]	(71526.124, +0)	 load_items_from_db: Can't load eq_mic_p1 (pk=0) 	(in cfg.c line #239)
+[User]	(71526.124, +0)	 cfg_params_load_item: Loaded eq_mic_p2=4 (pk=0) 	(in params.c line #52)
+[User]	(71526.124, +0)	 cfg_params_load_item: Loaded eq_mic_p3=3 (pk=0) 	(in params.c line #52)
+[Warn]	(71526.124, +0)	 cfg_params_load_item: No results for load eq_mic_p4 	(in params.c line #77)
+[User]	(71526.124, +0)	 load_items_from_db: Can't load eq_mic_p4 (pk=0) 	(in cfg.c line #239)
+[User]	(71526.124, +0)	 cfg_params_load_item: Loaded eq_mic_p5=-5 (pk=0) 	(in params.c line #52)
+[User]	(71526.126, +2)	 get_band_info_by_pk: Loading band info for id: 204 	(in band.c line #200)
+[User]	(71526.126, +0)	 cfg_band_params_load_item: Loaded vfoa_freq=27635000 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +1)	 cfg_band_params_load_item: Loaded vfoa_mode=2 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfoa_agc=3 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfoa_pre=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfoa_att=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Copy vfoa freq to vfob 	(in band.c line #437)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfob_freq=27635000 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfob_mode=2 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfob_agc=3 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfob_pre=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfob_att=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded vfo=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded split=0 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded rfg=100 (pk=204) 	(in band.c line #452)
+[User]	(71526.127, +0)	 cfg_band_params_load_item: Loaded grid_min=-121 (pk=204) 	(in band.c line #452)
+[User]	(71526.128, +1)	 cfg_band_params_load_item: Loaded grid_max=-73 (pk=204) 	(in band.c line #452)
+[User]	(71526.128, +0)	 cfg_mode_params_load_item: Loaded filter_high=2850 (pk=0) 	(in mode.c line #134)
+[User]	(71526.128, +0)	 update_cur_high_filter: Set current high filter: 2850 	(in mode.c line #535)
+[User]	(71526.128, +0)	 cfg_mode_params_load_item: Loaded filter_low=150 (pk=0) 	(in mode.c line #134)
+[User]	(71526.129, +1)	 update_cur_low_filter: Set current low filter: 150 	(in mode.c line #509)
+[User]	(71526.129, +0)	 cfg_mode_params_load_item: Loaded freq_step=100 (pk=0) 	(in mode.c line #134)
+[User]	(71526.129, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(71526.129, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(71526.135, +6)	 cfg_mode_params_load_item: Loaded filter_high=4500 (pk=6) 	(in mode.c line #134)
+[User]	(71526.135, +Simple mixer control 'Headphone',0
+  Capabilities: pvolume pvolume-joined pswitch
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 63
+  Mono:
+  Front Left: Playback 58 [92%] [-5.00dB] [on]
+  Front Right: Playback 58 [92%] [-5.00dB] [on]
+Simple mixer control 'AIF1 DA0',0
+  Capabilities: pvolume
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 192
+  Mono:
+  Front Left: Playback 160 [83%] [0.00dB]
+  Front Right: Playback 160 [83%] [0.00dB]
+Simple mixer control 'Mic1',0
+  Capabilities: pvolume pvolume-joined pswitch cswitch
+  Playback channels: Front Left - Front Right
+  Capture channels: Front Left - Front Right
+  Limits: Playback 0 - 7
+  Front Left: Playback 0 [0%] [-4.50dB] [off] Capture [on]
+  Front Right: Playback 0 [0%] [-4.50dB] [off] Capture [on]
+x6200 QA: PCM post-Speex fresco; pidiendo ENABLE al arbitro
+x6200 QA: activation err=0 state=ACTIVE
+Simple mixer control 'Mic1 Boost',0
+  Capabilities: volume volume-joined
+  Playback channels: Mono
+  Capture channels: Mono
+  Limits: 0 - 7
+  Mono: 0 [0%] [0.00dB]
+Simple mixer control 'Mixer',0
+  Capabilities: cswitch
+  Capture channels: Front Left - Front Right
+  Front Left: Capture [off]
+  Front Right: Capture [off]
+Simple mixer control 'ADC Gain',0
+  Capabilities: cvolume cvolume-joined
+  Capture channels: Mono
+  Limits: Capture 0 - 7
+  Mono: Capture 3 [43%] [0.00dB]
+Simple mixer control 'AIF1 AD0',0
+  Capabilities: cvolume
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 192
+  Front Left: Capture 160 [83%] [0.00dB]
+  Front Right: Capture 160 [83%] [0.00dB]
+Simple mixer control 'AIF1 AD0 Stereo',0
+  Capabilities: cenum
+  Items: 'Stereo' 'Reverse Stereo' 'Sum Mono' 'Mix Mono'
+  Item0: 'Mix Mono'
+  Item1: 'Mix Mono'
+Simple mixer control 'AIF1 Data Digital ADC',0
+  Capabilities: cswitch
+  Capture channels: Front Left - Front Right
+  Front Left: Capture [on]
+  Front Right: Capture [on]
