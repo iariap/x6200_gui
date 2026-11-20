@@ -1,0 +1,43 @@
+# Commands log — QA-SPEAKER-QUALITY (#362/#390 relacionado) — 2026-11-04 UTC
+
+## 0. Base y aislamiento
+git -C x6200_gui fetch fork -> ok; fork/main=681074e0…; origin/main=e1476ece… (no usado); main local=6a29687d (intacto)
+gh pr view 392/391/389/388/386/385 --json headRefOid,state -> heads coinciden con el encargo y OPEN
+git worktree add rx-speaker-quality-ab -b research/rx-speaker-quality-ab 681074e0 -> ok; HEAD=681074e0, limpio
+
+## 1. Lectura de evidencia previa (sin duplicar archivos)
+x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/{README.md,rx-test1.md,rx-test2-repeat.md,rx-test3-ab.md}
+  -> SPEAKER_AUDIO_HEARD=YES, PRESET_DIFFERENCE_HEARD=YES (operador); writes=18 drops=0 underruns=0 (test3); PRODUCTION_NOT_READY
+x6200_qa/docs/evidencia/2026-10-29-rx-audible-route-363/README.md -> GATE_A=BLOCKED_SAFE_MUX
+x6200_qa/docs/evidencia/2026-10-28-rx-audio-feasibility/{README.md,measurements.csv,rnnoise-vs-speex.csv}
+  -> MEASURED-HOST: Speex ~0.17-0.23 % tiempo real, RNNoise ~1.95 % frame, latencias 5.805/21.38 ms, 0 clipping
+docs/AUDIO_ENHANCEMENT_GUIDE.md (base 681074e0): captura 44.1k mono S16; cadena notch→AF leveler→Speex NR; latencia 882 muestras=20 ms; sólo grabadora/decoders
+sha256sum de la evidencia previa -> logs/prior-evidence-sha256.txt
+
+## 2. Verificación de la base
+grep src/audio.c:74-83 -> capture_deliver aplica audio_enh_process y entrega a screen_rec/dsp; no playback
+src/audio.h:15 AUDIO_CAPTURE_RATE=44100; src/audio.c:61 scratch=4410
+ls src/rx_audio_live.* -> ausente (router experimental fuera de la base)
+
+## 3. Herramienta offline + tests (esta corrida)
+python3 tools/rx-speaker-quality/analyze_audio_ab.py > logs/offline-model.json -> exit 0 (consistency 10/10; modelo biquad/notch/AGC)
+python3 tools/rx-speaker-quality/tests/test_audio_ab.py > logs/tests.txt -> 5 tests OK
+  (MODEL: pasabanda -15.7 dB fuera de banda; notch -19.2 dB; AGC 0 clipping; etiquetados MODEL, no firmware/acústico)
+
+## 4. Validación del PR (commit documental 45eb7bde)
+
+```
+git diff --check 681074e0 HEAD                     -> exit 0 (sin whitespace)
+python3 tools/rx-speaker-quality/tests/test_audio_ab.py -> 5 tests OK
+python3 tools/rx-speaker-quality/analyze_audio_ab.py    -> exit 0 (consistency 10/10)
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del diff: 2 gates con `uv` por ~/.cache/uv read-only
+    ("Read-only file system (os error 30)") y check_drawbuf_partial por submódulo lvgl
+    no inicializado en el worktree nuevo.
+  - gates de shell: no aplica (no se agregaron .sh).
+python3 asf/scripts/risk.py x6200 --files <28 archivos> -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"], auto_approve=false
+```
+
+Nota honesta: **no se declara PASS** de build/QEMU/contrato; el diff es docs + tools (python) y no
+toca código de producción. El exit 1 de check-matrix es preexistente/entorno.

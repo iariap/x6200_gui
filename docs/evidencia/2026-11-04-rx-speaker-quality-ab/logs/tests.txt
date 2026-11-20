@@ -1,0 +1,10 @@
+test_agc_no_clipping_in_model (__main__.TestConsistency.test_agc_no_clipping_in_model) ... ok
+test_bandpass_attenuates_out_of_band (__main__.TestConsistency.test_bandpass_attenuates_out_of_band) ... ok
+test_biquad_bypass_identity (__main__.TestConsistency.test_biquad_bypass_identity) ... ok
+test_constants_source (__main__.TestConsistency.test_constants_source) ... ok
+test_notch_attenuates_tone (__main__.TestConsistency.test_notch_attenuates_tone) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 3.214s
+
+OK
