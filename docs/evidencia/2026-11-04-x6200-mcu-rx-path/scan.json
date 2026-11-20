@@ -1,0 +1,990 @@
+{
+  "image": "/home/pablo/desa/x6200/fw108-scratch/x6200-base-rea/x6200-108.dec.bin",
+  "size": 524288,
+  "base": "0x8020000",
+  "vector_table": [
+    {
+      "index": 1,
+      "handler": "0x08024881"
+    },
+    {
+      "index": 2,
+      "handler": "0x08023635"
+    },
+    {
+      "index": 3,
+      "handler": "0x0802363d"
+    },
+    {
+      "index": 4,
+      "handler": "0x08023645"
+    },
+    {
+      "index": 5,
+      "handler": "0x0802364d"
+    },
+    {
+      "index": 6,
+      "handler": "0x08023655"
+    },
+    {
+      "index": 11,
+      "handler": "0x0802365d"
+    },
+    {
+      "index": 12,
+      "handler": "0x08023661"
+    },
+    {
+      "index": 14,
+      "handler": "0x08023665"
+    },
+    {
+      "index": 15,
+      "handler": "0x08023669"
+    },
+    {
+      "index": 16,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 17,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 18,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 19,
+      "handler": "0x08022961"
+    },
+    {
+      "index": 20,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 21,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 22,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 23,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 24,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 25,
+      "handler": "0x08023679"
+    },
+    {
+      "index": 26,
+      "handler": "0x08023681"
+    },
+    {
+      "index": 27,
+      "handler": "0x08023d05"
+    },
+    {
+      "index": 28,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 29,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 30,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 31,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 32,
+      "handler": "0x08023d19"
+    },
+    {
+      "index": 33,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 34,
+      "handler": "0x08023689"
+    },
+    {
+      "index": 35,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 36,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 37,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 38,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 39,
+      "handler": "0x0802369d"
+    },
+    {
+      "index": 40,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 41,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 42,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 43,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 44,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 45,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 46,
+      "handler": "0x080236a5"
+    },
+    {
+      "index": 47,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 48,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 49,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 50,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 51,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 52,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 53,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 54,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 55,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 56,
+      "handler": "0x080236e9"
+    },
+    {
+      "index": 57,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 59,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 60,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 61,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 62,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 63,
+      "handler": "0x08023701"
+    },
+    {
+      "index": 64,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 65,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 66,
+      "handler": "0x08023bf1"
+    },
+    {
+      "index": 67,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 68,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 69,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 70,
+      "handler": "0x08023c09"
+    },
+    {
+      "index": 71,
+      "handler": "0x08023c71"
+    },
+    {
+      "index": 72,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 73,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 74,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 75,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 76,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 77,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 78,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 79,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 84,
+      "handler": "0x08023c99"
+    },
+    {
+      "index": 85,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 86,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 87,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 88,
+      "handler": "0x08044b55"
+    },
+    {
+      "index": 89,
+      "handler": "0x08044e35"
+    },
+    {
+      "index": 90,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 91,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 92,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 93,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 94,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 96,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 97,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 98,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 99,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 100,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 101,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 102,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 103,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 104,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 105,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 106,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 108,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 109,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 110,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 111,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 112,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 113,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 118,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 126,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 127,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 128,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 129,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 131,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 132,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 133,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 134,
+      "handler": "0x08023cad"
+    },
+    {
+      "index": 135,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 136,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 138,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 140,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 141,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 143,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 144,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 145,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 146,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 147,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 148,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 149,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 150,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 151,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 152,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 153,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 154,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 155,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 156,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 157,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 158,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 160,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 161,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 162,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 163,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 165,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 166,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 169,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 170,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 171,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 172,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 173,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 174,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 175,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 176,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 177,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 178,
+      "handler": "0x080248d1"
+    },
+    {
+      "index": 188,
+      "handler": "0x0804f614"
+    },
+    {
+      "index": 195,
+      "handler": "0x0804f614"
+    }
+  ],
+  "irq_handlers": {
+    "DMA1_Stream0": "0x08023d05",
+    "DMA1_Stream1": "0x080248d1 (default)",
+    "DMA1_Stream2": "0x080248d1 (default)",
+    "DMA1_Stream3": "0x080248d1 (default)",
+    "DMA1_Stream4": "0x080248d1 (default)",
+    "DMA1_Stream5": "0x08023d19",
+    "DMA1_Stream6": "0x080248d1 (default)",
+    "SPI1": "0x080248d1 (default)",
+    "SPI2": "0x080248d1 (default)",
+    "DMA1_Stream7": "0x08023701",
+    "SPI3": "0x080248d1 (default)",
+    "DMA2_Stream0": "0x080248d1 (default)",
+    "DMA2_Stream1": "0x080248d1 (default)",
+    "DMA2_Stream2": "0x080248d1 (default)",
+    "DMA2_Stream3": "0x080248d1 (default)",
+    "DMA2_Stream4": "0x080248d1 (default)",
+    "DMA2_Stream5": "0x08023c99",
+    "DMA2_Stream6": "0x080248d1 (default)",
+    "DMA2_Stream7": "0x080248d1 (default)",
+    "SPI4": "0x080248d1 (default)",
+    "SPI5": "0x080248d1 (default)",
+    "SPI6": "0x080248d1 (default)",
+    "SAI1": "0x080248d1 (default)",
+    "MDMA": "0x080248d1 (default)",
+    "SAI4": "0x080248d1 (default)"
+  },
+  "strings": [
+    {
+      "text": "Init audio codec",
+      "va": "0x0804fc99"
+    },
+    {
+      "text": "Init audio processor",
+      "va": "0x0804fcd5"
+    },
+    {
+      "text": "CODEC buffer underrun",
+      "va": "0x08067e2e"
+    },
+    {
+      "text": "FPGA buffer underrun",
+      "va": "0x08067e4a"
+    },
+    {
+      "text": "Init FPGA",
+      "va": "0x0804fd2d"
+    },
+    {
+      "text": "FPGA FW Version",
+      "va": "0x080502e7"
+    },
+    {
+      "text": "RX MODE",
+      "va": "0x0805044c"
+    },
+    {
+      "text": "TXRX MODE",
+      "va": "0x08050454"
+    },
+    {
+      "text": "TX MODE",
+      "va": "0x08050480"
+    },
+    {
+      "text": "RX Volume",
+      "va": "0x080682a1"
+    }
+  ],
+  "peripheral_ranges": {
+    "SAI1": {
+      "count": 0,
+      "refs": []
+    },
+    "SAI2": {
+      "count": 0,
+      "refs": []
+    },
+    "SAI3": {
+      "count": 0,
+      "refs": []
+    },
+    "SAI4": {
+      "count": 0,
+      "refs": []
+    },
+    "SPI1": {
+      "count": 0,
+      "refs": []
+    },
+    "SPI2": {
+      "count": 0,
+      "refs": []
+    },
+    "SPI3": {
+      "count": 5,
+      "refs": [
+        {
+          "at": "0x08021aa8",
+          "value": "0x40003c00"
+        },
+        {
+          "at": "0x08021c20",
+          "value": "0x40003c00"
+        },
+        {
+          "at": "0x08021c80",
+          "value": "0x40003c00"
+        },
+        {
+          "at": "0x08035ab8",
+          "value": "0x40003c00"
+        },
+        {
+          "at": "0x08035b24",
+          "value": "0x40003c00"
+        }
+      ]
+    },
+    "SPI4": {
+      "count": 0,
+      "refs": []
+    },
+    "SPI5": {
+      "count": 0,
+      "refs": []
+    },
+    "SPI6": {
+      "count": 0,
+      "refs": []
+    },
+    "DMA1": {
+      "count": 34,
+      "refs": [
+        {
+          "at": "0x08020edc",
+          "value": "0x400200b8"
+        },
+        {
+          "at": "0x08021c34",
+          "value": "0x40020088"
+        },
+        {
+          "at": "0x08021c3c",
+          "value": "0x40020010"
+        },
+        {
+          "at": "0x080247c8",
+          "value": "0x40020058"
+        },
+        {
+          "at": "0x080247d0",
+          "value": "0x40020070"
+        },
+        {
+          "at": "0x080247d8",
+          "value": "0x40020040"
+        },
+        {
+          "at": "0x080286e4",
+          "value": "0x40020010"
+        },
+        {
+          "at": "0x080286e8",
+          "value": "0x40020040"
+        },
+        {
+          "at": "0x080286f4",
+          "value": "0x40020000"
+        },
+        {
+          "at": "0x080286fc",
+          "value": "0x40020004"
+        },
+        {
+          "at": "0x080288a8",
+          "value": "0x40020010"
+        },
+        {
+          "at": "0x080288ac",
+          "value": "0x40020028"
+        }
+      ]
+    },
+    "DMA2": {
+      "count": 12,
+      "refs": [
+        {
+          "at": "0x080211f4",
+          "value": "0x40020488"
+        },
+        {
+          "at": "0x080286ec",
+          "value": "0x40020428"
+        },
+        {
+          "at": "0x08028700",
+          "value": "0x40020400"
+        },
+        {
+          "at": "0x08028704",
+          "value": "0x40020404"
+        },
+        {
+          "at": "0x080288b0",
+          "value": "0x400204b8"
+        },
+        {
+          "at": "0x08028fb0",
+          "value": "0x40020428"
+        },
+        {
+          "at": "0x08028fb4",
+          "value": "0x40020470"
+        },
+        {
+          "at": "0x08028fb8",
+          "value": "0x400204b8"
+        },
+        {
+          "at": "0x08028fdc",
+          "value": "0x40020400"
+        },
+        {
+          "at": "0x080294c4",
+          "value": "0x400204b8"
+        },
+        {
+          "at": "0x08029610",
+          "value": "0x40020400"
+        },
+        {
+          "at": "0x08029878",
+          "value": "0x400204b8"
+        }
+      ]
+    },
+    "DMAMUX1": {
+      "count": 3,
+      "refs": [
+        {
+          "at": "0x080287d8",
+          "value": "0x40020880"
+        },
+        {
+          "at": "0x08028d04",
+          "value": "0x40020940"
+        },
+        {
+          "at": "0x08028fe4",
+          "value": "0x40020940"
+        }
+      ]
+    },
+    "MDMA": {
+      "count": 1,
+      "refs": [
+        {
+          "at": "0x080518c8",
+          "value": "0x58000128"
+        }
+      ]
+    },
+    "DAC": {
+      "count": 3,
+      "refs": [
+        {
+          "at": "0x08021090",
+          "value": "0x40007400"
+        },
+        {
+          "at": "0x0802110c",
+          "value": "0x40007400"
+        },
+        {
+          "at": "0x08021138",
+          "value": "0x40007400"
+        }
+      ]
+    },
+    "ADC1": {
+      "count": 25,
+      "refs": [
+        {
+          "at": "0x08020d24",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x08020ec0",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x08020f30",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x08027290",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x08027298",
+          "value": "0x40022100"
+        },
+        {
+          "at": "0x0802729c",
+          "value": "0x40022300"
+        },
+        {
+          "at": "0x080272c8",
+          "value": "0x40022300"
+        },
+        {
+          "at": "0x08027694",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x080278f4",
+          "value": "0x40022300"
+        },
+        {
+          "at": "0x080278f8",
+          "value": "0x40022000"
+        },
+        {
+          "at": "0x080278fc",
+          "value": "0x40022100"
+        },
+        {
+          "at": "0x080279b4",
+          "value": "0x40022000"
+        }
+      ]
+    },
+    "ADC2": {
+      "count": 0,
+      "refs": []
+    },
+    "ADC3": {
+      "count": 10,
+      "refs": [
+        {
+          "at": "0x08027294",
+          "value": "0x58026300"
+        },
+        {
+          "at": "0x08027684",
+          "value": "0x58026000"
+        },
+        {
+          "at": "0x08027698",
+          "value": "0x58026300"
+        },
+        {
+          "at": "0x080276a8",
+          "value": "0x58026060"
+        },
+        {
+          "at": "0x08027900",
+          "value": "0x58026000"
+        },
+        {
+          "at": "0x08027acc",
+          "value": "0x58026300"
+        },
+        {
+          "at": "0x08027ae4",
+          "value": "0x58026000"
+        },
+        {
+          "at": "0x08027c7c",
+          "value": "0x58026300"
+        },
+        {
+          "at": "0x08027f4c",
+          "value": "0x58026000"
+        },
+        {
+          "at": "0x08027f68",
+          "value": "0x58026300"
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Matched base+offset peripheral literals; not a full data-flow proof.",
+    "No SAI/SAI IRQ references found; SPI3/DMA/FPGA control path present."
+  ]
+}

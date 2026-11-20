@@ -1,0 +1,78 @@
+{
+  "i2scfgr_site": [
+    {
+      "addr": "0x0802b1d0",
+      "asm": "movw r1, #0xff8"
+    },
+    {
+      "addr": "0x0802b1d4",
+      "asm": "orr r3, r3, #1"
+    },
+    {
+      "addr": "0x0802b1d8",
+      "asm": "str r3, [r2, #0x50]"
+    },
+    {
+      "addr": "0x0802b1da",
+      "asm": "str r1, [r2, #0x18]"
+    },
+    {
+      "addr": "0x0802b1dc",
+      "asm": "ldr r3, [r2]"
+    },
+    {
+      "addr": "0x0802b1de",
+      "asm": "ldr r1, [r4, #0x1c]"
+    }
+  ],
+  "dma_request_sites": {
+    "0x08021b74": [
+      "ldr r1, [pc, #0xbc]",
+      "mov r0, r6",
+      "str r3, [r6, #0xc]",
+      "str r3, [r6, #0x24]",
+      "mov.w r3, #0x400"
+    ],
+    "0x08021bbc": [
+      "ldr r1, [pc, #0x7c]",
+      "movs r2, #0x3d",
+      "movs r3, #0",
+      "str r1, [r5]",
+      "mov.w r1, #0x400"
+    ]
+  },
+  "sram_buffer_sites": {
+    "0x08035b48": [
+      "ldr r0, [pc, #0x13c]",
+      "ldr r4, [pc, #0x13c]",
+      "bl #0x803995c"
+    ],
+    "0x08035b56": [
+      "ldr r0, [pc, #0x134]",
+      "bl #0x803995c",
+      "mov r3, r4"
+    ],
+    "0x08035bd4": [
+      "str r5, [r6, #0x34]",
+      "movs r5, #0",
+      "ldr r0, [r6, #0x48]"
+    ],
+    "0x08035bfe": [
+      "str r4, [r6, #0x2c]",
+      "str r2, [r3, #0x40]",
+      "ldr r2, [pc, #0xa8]",
+      "str r2, [r3, #0x3c]"
+    ]
+  },
+  "state_struct": "0x24005a38 (from 0x08035b9a)",
+  "CODEC buffer underrun": {
+    "va": "0x08067e2e"
+  },
+  "FPGA buffer underrun": {
+    "va": "0x08067e4a"
+  },
+  "notes": [
+    "SPI3+0x50 is I2SCFGR in CMSIS H725; I2SMOD=bit0.",
+    "0x30000000/0x30000C00 are SRAM1 buffers, not FPGA memory."
+  ]
+}
