@@ -1,0 +1,9 @@
+08b0504906f2c8d26818df8224497e466e84fb6db89b669fc7455fb07180bdc0  tools/linux-dsp-rx-quality/build/fixture_bandnoise.wav
+9cc0d021a0242724da7e1c8524f45a19f7c22eca9d2fc673da7ddb840b01bbdf  tools/linux-dsp-rx-quality/build/fixture_female.wav
+e9099118321256d52294e83b09bb7f59f273a0f117c476d703929b44f6438087  tools/linux-dsp-rx-quality/build/fixture_impulses.wav
+037c3b958229ee280d36d6e45f9002233d089e739cf47e714a915384bafc1445  tools/linux-dsp-rx-quality/build/fixture_level_steps.wav
+336ffd17c62c841a9e1e0cbc916d0fb11162f98c2da4aa2024fb5eabebe7196f  tools/linux-dsp-rx-quality/build/fixture_male.wav
+dbe7dc14cebd2d814bee269083483ceb2ae25249bd8230ec0a083cecb843899e  tools/linux-dsp-rx-quality/build/fixture_max_level.wav
+2c9991a1b469451118eb1cfdc6565688c29033d8ebe7fbe08a72db03447d5661  tools/linux-dsp-rx-quality/build/fixture_qrm.wav
+a4e6d2c2ab8e21f24835b5f51601a507095d8ee9c4f2b9ab658638d525afa725  tools/linux-dsp-rx-quality/build/fixture_silence.wav
+a3c01b997c06caeb7b7d291926415b60526f53dae82a5d813101da718098d0df  tools/linux-dsp-rx-quality/build/fixture_weak_noise.wav

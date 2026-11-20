@@ -1,0 +1,23 @@
+In file included from src/params/params.h:20,
+                 from src/audio_enhancement.c:15:
+src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from src/params/params.h:20,
+                 from tests/native/audio_enh_stubs.c:21:
+src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+tools/linux-dsp-rx-quality/voice_quality_bench.c: In function ‘main’:
+tools/linux-dsp-rx-quality/voice_quality_bench.c:107:5: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+  107 |     for (int x=0;x<5;x++) fprintf(jp, "%s\"%s\"", x?",":"", modes[x]); fprintf(jp,"],\"rows\":[");
+      |     ^~~
+tools/linux-dsp-rx-quality/voice_quality_bench.c:107:72: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+  107 |     for (int x=0;x<5;x++) fprintf(jp, "%s\"%s\"", x?",":"", modes[x]); fprintf(jp,"],\"rows\":[");
+      |                                                                        ^~~~~~~
+tools/linux-dsp-rx-quality/voice_quality_bench.c:118:13: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  118 |             if(!first) fprintf(jp,","); first=0;
+      |             ^~
+tools/linux-dsp-rx-quality/voice_quality_bench.c:118:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  118 |             if(!first) fprintf(jp,","); first=0;
+      |                                         ^~~~~
