@@ -1,0 +1,40 @@
+# Evidencia RX live #364 — 2026-10-31
+# Sin credenciales, sin IP privadas, sin audio de QSO.
+
+## Base
+GUI main = 681074e0adac5a79f0392b4e51284167abf5e342
+Buildroot main = 745af77e12b1c8fdabb234ec688608e386eb5be0
+Rama = feat/rx-audio-live-fasttrack (worktree aislado)
+
+## Host tests
+$ sh tests/native/run_native_tests.sh
+# exit 0
+# ...
+# == Router RX live #364: ring/estados/prioridades (host) ==
+# 39 comprobaciones, 0 fallos
+# == Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) == (sin errores)
+# Suite completa: 0 fallos.
+
+## Cross compile ARM del modulo
+$ arm-buildroot-linux-gnueabihf-gcc -std=gnu11 -O2 -Wall -Wextra -Werror -pthread -I src -c src/rx_audio_live.c
+# OK: ELF 32-bit LSB relocatable, ARM, EABI5
+
+## Build GUI target desde el branch
+# Buildroot del owner, paquete GUI local apuntando a este worktree, SDK X6200Control v0.1.1 + patch (main mergeado)
+$ make aether-x6200-control-dirclean
+$ make x6200-gui-dirclean
+$ make x6200-gui
+# BUILD_EXIT=0
+# (build tree del owner restaurado a su estado previo)
+
+## Verificacion de no-MUX
+# El backend del target:
+#   rx_live_mux_ready() -> false
+#   rx_live_mux_request() -> -1
+# Aun con rx_audio_live_set_enabled(true), el worker no solicita DAC ni escribe reg12.
+# Tests host: test_mux_gate_false_blocks_dac (39 checks, 0 fallos).
+# No se abrio /dev/i2c, no se pulso PTT/ATU, no se transmitio.
+
+## QEMU
+# NOT_EXECUTED: no se uso QEMU en esta unidad; la validacion host+ARM cubre el modulo.
+# La prueba fisica queda bloqueada por A/B/C y no se ejecuto (ver mux-gate.md).

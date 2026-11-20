@@ -25,6 +25,7 @@
 #include "params/params.h"
 #include "audio_enhancement.h"
 #include "screen_rec.h"
+#include "rx_audio_live.h"
 
 #define AUDIO_RATE_MS   100
 
@@ -41,6 +42,12 @@ static char                 *capture_device = "alsa_input.platform-sound.stereo-
 
 static pa_stream            *monitor_stm = NULL;
 
+/* Router RX live (#364): stream propio, separado de play_stm (TTS/audio generado).
+ * El backend MUX queda fail-closed hasta que #363 acredite A/B/C en hardware. */
+#ifndef X6200_AUDIO_CALLBACK_TEST
+static pa_stream            *rx_live_stm = NULL;
+#endif
+
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
  * se anota hasta cuándo no insistir. Sin esto, cada bloque de audio de FT8/JS8/voz pagaría su
  * propio tope de 2 s y el que manda audio se quedaría esperando minutos. */
@@ -49,6 +56,102 @@ static uint64_t              play_sin_lugar_hasta = 0;
 static float                peak_db = -60.0f;
 
 static void record_monitor_setup();
+
+#ifndef X6200_AUDIO_CALLBACK_TEST
+static bool rx_live_pa_open(void *ctx) {
+    (void) ctx;
+    if (!audio_up || mloop == NULL || ctx == NULL) {
+        return false;
+    }
+    if (rx_live_stm != NULL) {
+        return pa_stream_get_state(rx_live_stm) == PA_STREAM_READY;
+    }
+
+    pa_sample_spec spec = {
+        .format = PA_SAMPLE_S16NE,
+        .rate = AUDIO_PLAY_RATE,
+        .channels = 1,
+    };
+    pa_buffer_attr attr;
+    memset(&attr, 0xff, sizeof(attr));
+    attr.fragsize = pa_usec_to_bytes(AUDIO_RATE_MS * PA_USEC_PER_MSEC, &spec);
+    attr.tlength = attr.fragsize * RX_AUDIO_LIVE_BLOCKS;
+
+    pa_threaded_mainloop_lock(mloop);
+    rx_live_stm = pa_stream_new(ctx, "X6200 RX Live", &spec, NULL);
+    if (rx_live_stm != NULL) {
+        pa_stream_connect_playback(rx_live_stm, play_device, &attr,
+                                   PA_STREAM_ADJUST_LATENCY, NULL, NULL);
+    }
+    pa_threaded_mainloop_unlock(mloop);
+
+    return rx_live_stm != NULL;
+}
+
+static void rx_live_pa_close(void *ctx) {
+    (void) ctx;
+    if (rx_live_stm == NULL || mloop == NULL) {
+        return;
+    }
+    pa_threaded_mainloop_lock(mloop);
+    pa_stream_disconnect(rx_live_stm);
+    pa_stream_unref(rx_live_stm);
+    rx_live_stm = NULL;
+    pa_threaded_mainloop_unlock(mloop);
+}
+
+static bool rx_live_pa_ready(void *ctx) {
+    bool ready = false;
+    (void) ctx;
+    if (!audio_up || mloop == NULL || rx_live_stm == NULL) {
+        return false;
+    }
+    pa_threaded_mainloop_lock(mloop);
+    ready = pa_stream_get_state(rx_live_stm) == PA_STREAM_READY;
+    pa_threaded_mainloop_unlock(mloop);
+    return ready;
+}
+
+static bool rx_live_pa_write(void *ctx, const int16_t *samples, size_t count) {
+    int rc = -1;
+    (void) ctx;
+    if (!audio_up || mloop == NULL || rx_live_stm == NULL || samples == NULL || count == 0) {
+        return false;
+    }
+    pa_threaded_mainloop_lock(mloop);
+    if (pa_stream_get_state(rx_live_stm) == PA_STREAM_READY &&
+        pa_stream_writable_size(rx_live_stm) >= count * sizeof(int16_t)) {
+        rc = pa_stream_write(rx_live_stm, samples, count * sizeof(int16_t),
+                             NULL, 0, PA_SEEK_RELATIVE);
+    }
+    pa_threaded_mainloop_unlock(mloop);
+    return rc >= 0;
+}
+
+/* Gate A/B/C sin acreditar: el worker no debe pedir DAC ni escribir el registro
+ * compartido. El coordinador real de #367 se conecta aqui SOLO despues de que
+ * #363 acredite readback/restore fisico. */
+static bool rx_live_mux_ready(void *ctx) {
+    (void) ctx;
+    return false;
+}
+
+static int rx_live_mux_request(void *ctx, bool dac) {
+    (void) ctx;
+    (void) dac;
+    return -1;
+}
+
+static const rx_audio_live_backend_t rx_live_backend = {
+    .ctx = NULL,
+    .open = rx_live_pa_open,
+    .close = rx_live_pa_close,
+    .ready = rx_live_pa_ready,
+    .write = rx_live_pa_write,
+    .mux_ready = rx_live_mux_ready,
+    .mux_request = rx_live_mux_request,
+};
+#endif
 
 static void on_state_change(pa_context *c, void *userdata) {
     pa_threaded_mainloop_signal(mloop, 0);
@@ -74,6 +177,8 @@ static void capture_drop(pa_stream *s) {
 static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
     if (process) {
         audio_enh_process(scratch, samples);
+        /* Misma PCM post-Speex para el router RX live (inerte hasta #363 A_PASS). */
+        rx_audio_live_submit(scratch, samples);
     }
 
     /* Screen recorder: keeps the RX audio next to the video frames */
@@ -99,6 +204,7 @@ static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
 
     if (rc < 0) {
         LV_LOG_ERROR("pa_stream_peek() fallo: %s", pa_strerror(pa_context_errno(ctx)));
+        rx_audio_live_notify_capture_error();
         return;     /* sin drop: no hay fragmento que consumir */
     }
 
@@ -202,6 +308,9 @@ void audio_init() {
      * podia terminar despues de que params_init()/dsp_init() aplicaran el preset elegido
      * por el usuario, borrandolo. PA y los `amixer` siguen arrancando en background. */
     audio_enh_init();
+#ifndef X6200_AUDIO_CALLBACK_TEST
+    rx_audio_live_init(&rx_live_backend);
+#endif
 
     if (pthread_create(&t, NULL, audio_init_thread, NULL) == 0) {
         pthread_detach(t);
@@ -371,6 +480,9 @@ int audio_play(int16_t *samples_buf, size_t samples) {
 
     if (res < 0) {
         LV_LOG_ERROR("pa_stream_write() failed: %s", pa_strerror(pa_context_errno(ctx)));
+    } else {
+        /* Audio generado/TTS/mensajes: prioridad sobre el RX live. */
+        rx_audio_live_set_generated_audio(true);
     }
 
     return res;
@@ -415,6 +527,7 @@ void audio_play_wait() {
     pa_threaded_mainloop_unlock(mloop);
 
     pa_operation_unref(op);
+    rx_audio_live_set_generated_audio(false);
 }
 
 void audio_gain_db(int16_t *buf, size_t samples, float gain, int16_t *out) {
@@ -463,6 +576,7 @@ void audio_play_en(bool on) {
             return;
         }
 
+        rx_audio_live_set_generated_audio(true);
         x6200_control_hmic_set(0);
         x6200_control_imic_set(0);
         x6200_control_record_set(true);
@@ -470,6 +584,7 @@ void audio_play_en(bool on) {
         /* La restauracion va SIEMPRE, aunque el stream se haya caido entre el on y
          * el off (#244): si se saltea, el BASE queda en modo record/mic y el audio de
          * RX no vuelve hasta un power-cycle. */
+        rx_audio_live_set_generated_audio(false);
         x6200_control_record_set(false);
         x6200_control_hmic_set(params.hmic);
         x6200_control_imic_set(params.imic);
