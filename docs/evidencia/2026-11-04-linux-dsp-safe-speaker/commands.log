@@ -1,0 +1,59 @@
+# Commands log — QA-LINUX-DSP-ROUTE — 2026-11-04 UTC (offline)
+
+## 0. Base / remotos / PRs
+cd x6200_gui && git fetch fork -> ok
+git rev-parse fork/main -> 681074e0adac5a79f0392b4e51284167abf5e342
+git rev-parse origin/main -> e1476ecef355e8c3e5084e577ecc35689d4f326d (distinto, NO usado)
+git rev-parse main -> 6a29687d (local añejo; intacto)
+gh pr view 393/392/391/389/388/386/385/368/370/372/373/384 --json headRefOid,state
+  -> #393 25ae632a, #392 697cea97, #391 de35affa, #389 c0299e0b, #388 7cb97cf6, #386 84777dff,
+     #385 68c501a8, #368 12aef989 (draft), #370 45b2bcc4 (merged), #372 f9edc709 (merged),
+     #373 1b0f9e44, #384 b46eba0b (open) — todos preservados
+git worktree add linux-dsp-safe-speaker-route -b research/linux-dsp-safe-speaker-route 681074e0 -> ok
+git status -> limpio, HEAD 681074e0
+
+## 1. Evidencia previa leída (no duplicada)
+x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/{rx-test1,rx-test2-repeat,rx-test3-ab}.md
+  -> SPEAKER_AUDIO_HEARD=YES, PRESET_DIFFERENCE_HEARD=YES; writes=18 drops=0 underruns=0 (test3);
+     ruta capture->audio_enh_process->rx_audio_live->DAC/MUX->speaker; no audio_play_en; PRODUCTION_NOT_READY
+x6200_qa/docs/evidencia/2026-10-29-rx-audible-route-363/README.md -> GATE_A=BLOCKED_SAFE_MUX (sin readback/owner/restore)
+docs/evidencia/2026-10-29-rx-readback-rprime/{README.md,gates.csv} (base 681074e0) -> R_INCONCLUSIVE, sin readback real
+x6200-rx-mux-guard-aprime/docs/evidencia/2026-10-29-rx-audio-a-prime/{README.md,guardian-contract.md}
+  -> A' guardian: lease 100 ms, backup 250 ms, exige readback; G2 host p50 101.7/p99 103.3/max 103.3 ms; INACTIVO, no lanzado por daemon
+x6200-rx-speaker-364 (commit ef0d2da2, PR #384): router #364 default OFF, estados/fail-closed, tests 124/0 + 178/0, ARM OK
+x6200-rx-live-fasttrack/src/rx_audio_live.c:.h -> ring 4x4410, stale 200 ms, worker, suspends TX/generado/capture/stale/sink
+rootfs/usr/sbin/x6200_daemon -> while true; relanza x6200_gui (restore sólo reiniciando GUI)
+refs/X6200Control/src/control.c -> record_set RMW sombra; x6200_control_cmd/get; idle reescribe 218 B
+src/audio.c/audio.h (base) -> 44.1k mono S16, capture_deliver -> recorder/decoders (no speaker); audio_play_en usa HMic/IMic=0
+sha256 de evidencia previa -> logs/prior-evidence-sha256.txt
+
+## 2. Herramienta/modelo offline (esta corrida)
+tools/linux-dsp-safe-speaker/route_arbiter_model.[ch]: modelo de árbitro de ruta (sin I/O real)
+tests/linux-dsp-safe-speaker/{test_route_arbiter.c,run_tests.sh}
+tests/linux-dsp-safe-speaker/run_tests.sh -> 156 comprobaciones, 0 fallos; restore_latency_ms=110 (budget 250)
+tests/linux-dsp-safe-speaker/run_tests.sh --arm -> 156/0; route_arbiter_model.arm.o ELF32 ARM EABI5
+gcc -std=c11 -Wall -Wextra -Werror ... -> compila sin warnings (incluido ARM cross)
+
+## 3. Estado
+No se conectó radio; no I2C/ALSA/MUX/GPIO/reg12/24/0x34; sin flash/deploy; sin TX/PTT/ATU.
+Integración branch-local: sólo modelo de referencia; NO se modificó src/ ni se agregó a la GUI.
+
+## 4. Validación del PR (commit documental e558ee20)
+
+```
+git diff --check 681074e0 HEAD                     -> exit 0 (sin whitespace)
+tests/linux-dsp-safe-speaker/run_tests.sh          -> 156 comprobaciones, 0 fallos
+   restore_latency_ms=110 (budget=250)
+tests/linux-dsp-safe-speaker/run_tests.sh --arm    -> 156/0; arm.o ELF32 ARM EABI5
+bash asf/scripts/apps/x6200/check-matrix.sh 681074e0 HEAD <worktree> -> exit 1
+  - FAIL de ENTORNO, no del diff: `uv sync`, `x6200-ab themes` y `x6200-ab contracts`
+    fallan por ~/.cache/uv read-only ("Read-only file system (os error 30)");
+    check_drawbuf_partial falla por submódulo lvgl no inicializado en el worktree nuevo.
+  - `[check] bash -n tests/linux-dsp-safe-speaker/run_tests.sh` -> ok
+python3 asf/scripts/risk.py x6200 --files <13 archivos> -> exit 0
+  risk="medium", reviewers=["reviewer-frontend","reviewer-infra"], auto_approve=false
+git diff --name-only 681074e0 HEAD | grep -vE '^(docs|tools|tests)/' -> vacío (Sin cambios en src/ ni producción)
+```
+
+Nota honesta: **no se declara PASS** de build/QEMU/contrato/físico. check-matrix exit 1 es
+preexistente/entorno; el diff es docs + tools/tests offline. Físico sigue PENDING/BLOCKED.

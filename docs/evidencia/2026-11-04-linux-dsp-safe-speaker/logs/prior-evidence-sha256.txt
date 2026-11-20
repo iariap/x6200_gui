@@ -1,0 +1,7 @@
+12070061101910b28851b770c2f55850827e08127ae1ec701b1ccdc75ffab4b7  docs/evidencia/2026-10-29-rx-readback-rprime/README.md
+3e5323c5ea129cef2619e4b4b0d6465e4a9cce5f0f3b35968dd0ea6c3858023f  docs/evidencia/2026-10-29-rx-readback-rprime/gates.csv
+362ef4fa997cfa46c7f41c50285f87943d5c422109ea671c98ce2f54beab9e88  ../x6200-rx-mux-guard-aprime/docs/evidencia/2026-10-29-rx-audio-a-prime/README.md
+c4b3f5999455f460108447c937539a5513053798d869a5c4be63afd386dd08d5  ../x6200-rx-mux-guard-aprime/docs/evidencia/2026-10-29-rx-audio-a-prime/guardian-contract.md
+55fabf149e6d1a7ef837382aeb696a9dbc9b884a254e4fcc4a3eadabb4d76e29  ../x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/rx-test2-repeat.md
+d1ac289f5eacc5d901c4294aca57bf9e732db63cca91448992dfc790e676ad94  ../x6200_qa/docs/evidencia/2026-11-02-speaker-fasttrack/rx-test3-ab.md
+c340cd7e0cc01729d5b5dd3b6a10f1161eaed903f11c66b1c40f36f14bc11160  ../x6200_qa/docs/evidencia/2026-10-29-rx-audible-route-363/README.md
